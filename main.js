@@ -286,7 +286,7 @@ function display_flight_info(d){
 	info.select("#sel_flight_aircraft").text("Aircraft: ");
 	info.select("#sel_flight_time_ori_exp").text("Departure time (exp): "+"xxxx");
 	info.select("#sel_flight_time_ori_act").text("Departure time (act): "+d.properties.ORIG_TIME);	
-	info.select("#sel_flight_time_dest_exp").text("Arrival time (exp): "+timeformat.parse(d.properties.ARR_EST_TIME));
+	info.select("#sel_flight_time_dest_exp").text("Arrival time (exp): "+d.properties.ARR_EST_TIME);
 	info.select("#sel_flight_time_dest_act").text("Arrival time (act): "+timeformat(d3.max(d.geometry.times)));	
 	info.select("#sel_flight_speed").text("Speed: ")
 	info.select("#sel_flight_fuel").text("Fuel: ")
