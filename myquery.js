@@ -149,7 +149,6 @@ var responseText = '';
 
 function search() {
 	// spinner.start(target);
-	// var url = "http://128.61.186.135:9200/" + 'faa_nextor_traj/_search?size=' + $('#num_plot').val()
 	var url = "http://localhost:9200/" + 'faa_nextor_traj/_search?size='+ $('#num_plot').val()
 	
 	var client = new XMLHttpRequest();
@@ -158,7 +157,7 @@ function search() {
 	try {
 		client.send(generateQuery());
 	} catch(err) {
-	    alert('The query was not sent. There is probably a connection problem with the server!');
+	    alert('The query was not sent. There is probably a connection problem with the server!\nRemamber that you have to port forward cicero\'s 9200 on your 9200');
 	    spinner.stop()
 	}
 	if (client.status != 200){
