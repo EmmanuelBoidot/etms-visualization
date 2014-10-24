@@ -157,7 +157,7 @@ function search() {
 	try {
 		client.send(generateQuery());
 	} catch(err) {
-	    alert('The query was not sent. There is probably a connection problem with the server!\nRemamber that you have to port forward cicero\'s 9200 on your 9200');
+	    alert("The query was not sent. There is probably a connection problem with the server!\nRemember that you have to port forward cicero's 9200 on your 9200");
 	    spinner.stop()
 	}
 	if (client.status != 200){
