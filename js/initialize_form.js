@@ -35,7 +35,7 @@ function getAirportLists(){
 	try {
 		client.send(generateAirportLists());
 	} catch(err) {
-	    alert('Could not fetch the airport list. There is probably a connection problem with the server!');
+	    alert('Could not fetch the airport list. There is probably a connection problem with the server!\nRemember to forward port 9200 of cicero on your 9200');
 	    spinner.stop()
 	}
 	if (client.status != 200){

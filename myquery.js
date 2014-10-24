@@ -158,7 +158,7 @@ function search() {
 	try {
 		client.send(generateQuery());
 	} catch(err) {
-	    alert('The query was not sent. There is probably a connection problem with the server!');
+	    alert('The query was not sent. There is probably a connection problem with the server!\nRemember to forward port 9200 of cicero on your 9200');
 	    spinner.stop()
 	}
 	if (client.status != 200){
