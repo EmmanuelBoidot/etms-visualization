@@ -1,0 +1,3 @@
+https://www.aviationweather.gov/gis/scripts/stationicon.php?id=BRO&cover=S&wdir=240&wspd=35&temp=-32
+
+https://www.aviationweather.gov/adds/dataserver_current/current/

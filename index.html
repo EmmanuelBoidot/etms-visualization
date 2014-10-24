@@ -1,71 +1,221 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Etms-visualization by EmmanuelBoidot</title>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Etms-visualization</h1>
-        <p></p>
+<!--
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU AFFERO General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+any later version.
 
-        <p class="view"><a href="https://github.com/EmmanuelBoidot/etms-visualization">View the Project on GitHub <small>EmmanuelBoidot/etms-visualization</small></a></p>
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+or see http://www.gnu.org/licenses/agpl.txt.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
 
 
-        <ul>
-          <li><a href="https://github.com/EmmanuelBoidot/etms-visualization/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/EmmanuelBoidot/etms-visualization/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/EmmanuelBoidot/etms-visualization">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+<!-- head -->
+<head>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<!-- metatags -->
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>ATTiMe</title>
+<meta name="description" content="Air Traffic Time Machine"/>
+<meta name="author" content="Emmanuel Boidot and 'Wookie' Jong Wook Park" />
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<!-- <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script src="d3/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/leaflet.js" type="text/javascript"></script>
+<script src="http://fgnass.github.io/spin.js/spin.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="https://rawgithub.com/ebrelsford/Leaflet.loading/master/src/Control.Loading.css">
+<script src="https://rawgithub.com/ebrelsford/Leaflet.loading/master/src/Control.Loading.js"></script>
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" type="text/css"/> -->
+<!-- [if lte IE 8]><link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3//leaflet.ie.css" type="text/css"/><![endif] -->
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<!-- <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script> -->
+<script src="js/jquery-latest.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<link  href="js/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<script src="d3/d3.v3.min.js" charset="utf-8"></script>
+<script src="leaflet/leaflet.js" type="text/javascript"></script>
+<script src="js/spin.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="js/Control.Loading.css">
+<script src="js/Control.Loading.js"></script>
+<link rel="stylesheet" href="leaflet/leaflet.css" type="text/css"/>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<!-- [if lte IE 8]><link rel="stylesheet" href="leaflet/leaflet.ie.css" type="text/css"/><![endif] -->
+<script type="text/javascript">
+$(function(){
+	$("#includedForm").load("form.html",function(){update_form_options()});
+});
+</script>
+<script src="js/initialize_form.js" type="text/javascript"></script>
+<link rel="stylesheet" href="main.css" type="text/css"/>
+</head>
+<body>
+<div id="clouds">
+	<div class="cloud x1"></div>
+	<!-- Time for multiple clouds to dance around -->
+	<div class="cloud x2"></div>
+	<div class="cloud x3"></div>
+	<div class="cloud x4"></div>
+	<div class="cloud x5"></div>
+</div>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<div id="page_title">
+	<h1>ATTiMe</h1>
+	<h2>Air Traffic Time Machine</h2>
+</div>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<div id="includedForm">
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+</div>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<!-- no javascript warning -->
+<noscript id="no-js-warning">
+	<div class="error-header">No Javascript</div>
+	<div class="error-body">Javascript is required for the OSRM website to work. Please enable Javascript and reload the page.</div>
+</noscript>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/EmmanuelBoidot">EmmanuelBoidot</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
-  </body>
+<!-- old browser warning -->
+<div id="old-browser-warning">
+	<div class="error-header">Unsupported browser</div>
+	<div class="error-body">You are using a browser that is not supported by this website. Please switch or upgrade to a more recent browser.</div>
+</div>
+
+<!-- map -->
+<div id="map-container">
+	<div id="map-header"></div>
+	<div id="information_panel" class="column">
+		<h3>Information</h3>
+	</div>
+	<div id="map" class="column">
+		<div id="pop-up">
+			<div id="pop-up-title"></div>
+			<div id="pop-up-content"></div>
+		</div>
+	</div>
+	<div id="selection_panel" class="column">
+		<h4>Information</h4>
+		<div id="info_zoom"></div>
+		<div id="info_height"></div>
+		<div id="info_width"></div>
+		<h4>Flights</h4>
+		<div id="info_flights_num">#Flights: </div>
+		<div id="info_flights_ARL">#Airlines: </div>
+		<h4>Mouse</h4>
+		<div id="info_mouseLat">Lat: </div>
+		<div id="info_mouseLng">Lng: </div>
+		<h4>Graphics</h4>
+		<div id="info_opacity">
+			<label for="nOpacity_value" style="display: inline-block; width: 200px">
+		         Opacity = <span id="nOpacity_text">…</span>
+			</label></br>
+			<div class="slider-container">
+			<span class="info-button" id="minus-button">-</span>
+			<input type="range" min="0" max="1000" id="nOpacity_value" name="opacity_value" class="info-slider">
+			<span class="info-button" id="plus-button">+</span>
+			</div>
+		</div>
+		<div>Colored by: Airline</div>
+		<h4>Export</h4>
+		<span class="button" id="save_button">Save</span>
+	</div>
+</div>
+<!--info -->
+<div id="map-footer">
+		<div id="info_selected_flight" style="display:none">
+		<h3>Selected Flight</h3>
+			<div id="flight_info1" class="selected_flight_info_column">
+				<h4>Flight</h4>
+				<div id="sel_flight_ori_dest" class="selected_flight_info_div"></div>
+				<div id="sel_flight_ARL_and_num" class="selected_flight_info_div"></div>
+				<div id="sel_flight_date" class="selected_flight_info_div"></div>
+				<div id="sel_flight_tail" class="selected_flight_info_div"></div>
+				<div id="sel_flight_aircraft" class="selected_flight_info_div"></div>
+			</div>
+			<div id="flight_info2" class="selected_flight_info_column">
+				<h4>&nbsp;</h4>
+				<div id="sel_flight_time_ori_exp" class="selected_flight_info_div"></div>
+				<div id="sel_flight_time_ori_act" class="selected_flight_info_div"></div>
+				<div id="sel_flight_time_dest_exp" class="selected_flight_info_div"></div>
+				<div id="sel_flight_time_dest_act" class="selected_flight_info_div"></div>
+				<div id="sel_flight_speed" class="selected_flight_info_div"></div>
+				<div id="sel_flight_fuel" class="selected_flight_info_div"></div>
+			</div>
+			<div id="flight_info3" class="selected_flight_info_column">
+				<h4>Passengers</h4>
+				<div id="sel_flight_passengers_num" class="selected_flight_info_div"></div>
+				<div id="sel_flight_passengers_corres" class="selected_flight_info_div"></div>
+			</div>
+			<div id="flight_graphics">
+				<div id="altitude_plot" class="flight_plots">
+				<h4>Altitude</h4>
+					<div id="alt-pop-up">
+						<div id="alt-pop-up-title"></div>
+						<div id="alt-pop-up-content"></div>
+					</div>
+				</div>
+				<div id="groundspeed_plot" class="flight_plots">
+				<h4>Ground Speed</h4>
+					<div id="speed-pop-up">
+						<div id="speed-pop-up-title"></div>
+						<div id="speed-pop-up-content"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="display-filters">
+			<div id="airlines-list">
+				<h3>Airlines</h3>
+				<button type='button' onclick='checkAll_ARL()'>Check</button>
+				<button type='button' onclick='uncheckAll_ARL()'>Uncheck</button>
+			</div>
+			<div id="ori-dest-list">
+				<h3>Origin-Destination</h3>
+				<button type='button' onclick='checkAll_OD()'>Check</button>
+				<button type='button' onclick='uncheckAll_OD()'>Uncheck</button>
+			</div>
+		</div>
+		<div id="statistics">
+				<h3>Statistics</h3>
+		</div>
+</div>
+
+<div id="dialog-message" title="Error">
+    <span class="ui-state-default"><span class="ui-icon ui-icon-info" style="float:left; margin:0 7px 0 0;"></span></span>
+    <div style="margin-left: 23px;">
+        <p>
+        </p></div>
+</div>
+
+<div style="height:150px"></div>
+
+<div id="svgdataurl" style="display:none"></div>
+<div id="pngdataurl" style="display:none"></div>
+<canvas width="960" height="500" style="display:none"></canvas>
+
+<!--<p id="demo_adress">
+<pre><code id="query"></code></pre>
+<pre><code id="results"></code></pre>-->
+
+<!-- <div id="map-canvas"></div> -->
+
+<script src="info_flight_plot.js" type="text/javascript"></script>
+<script src="main.js" type="text/javascript"></script>
+<script src="myquery.js" type="text/javascript"></script>
+
+
+</body>
 </html>

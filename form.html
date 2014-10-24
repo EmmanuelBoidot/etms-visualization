@@ -1,0 +1,119 @@
+<!-- <div>
+	<button id="update_form_button" onclick="update_form_options()">Update Airports</button>
+</div> -->
+<div id="dept_aprt_div">
+	Departure Airport: 
+	<select id="DEPT_APRT"> 
+		<option value="">Select by Airport</option>
+		<option value="MIA">MIA: Miami International Airport</option>
+		<option value="SFO">SFO: San Francisco International Airport</option>
+		<option value="DFW">DFW: Dallas/Fort Worth International Airport</option>
+	</select>
+</div>
+<div>	
+	Arrival Airport: 
+	<select id="ARR_APRT"> 
+		<option value="">Select by Airport</option>
+		<option value="LGA">LGA: LaGuardia Airport</option>
+		<option value="JFK">JFK: John F. Kennedy International Airport</option>
+	</select>
+</div>
+<div>	
+	Airline Code(ICAO): 
+	<select id="AirlineCode"> 
+		<option value="">Select by Airline</option>
+		<option value="AAL">AAL: American Airlines</option>
+		<option value="DAL">DAL: Delta AirLines</option>
+		<option value="UAL">UAL: United Airlines</option>
+		<option value="VRD">VRD: Virgin America</option>
+		<option value="TCF">TCF: Shuttle America</option>
+		<option value="CPZ">CPZ: Compass Airlines</option>
+		<option value="JBU">JBU: JetBlue Airways</option>
+		<option value="FLG">FLG: Pinnacle Airlines</option>
+		<option value="NKS">NKS: Spirit Airlines</option>
+		<option value="KAL">KAL: Korean Air</option>
+		<option value="CAO">CAO: Air China Cargo</option>
+		<option value="EJA">EJA: NetJets</option>
+		<option value="AAR">AAR: Asiana Airlines</option>
+		<option value="GTI">GTI: Atlas Air</option>
+		<option value="ASQ">ASQ: ExpressJet</option>
+		<option value="LXJ">LXJ: Bombardier Business Jet Solutions</option>
+		<option value="OPT">OPT: Flight Options</option>
+		<option value="XFL">XFL: Executive Fliteways</option>
+		<option value="EJM">EJM: Executive Jet Management</option>
+		<option value="ELJ">ELJ: Delta Air Elite</option>
+		<option value="N18">N18: UFO</option>
+		<option value="N36">N36: UFO</option>
+		<option value="N60">N60: UFO</option>
+		<option value="N72">N72: UFO</option>
+		<option value="N75">N75: UFO</option>
+		<option value="TMC">TMC: Travel Management Company</option>
+		<option value="AWE">AWE: US Airways</option>
+		<option value="BJS">BJS: Business Jet Solutions</option>
+		<option value="BKI">BKI: UFO</option>
+		<option value="CGD">CGD: Charlotte Air National Guard</option>
+		<option value="CMP">CMP: Copa Airlines</option>
+		<option value="EGF">EGF: American Eagle Airlines</option>
+		<option value="FJS">FJS: Florida Jet Service</option>
+		<option value="HAL">HAL: Hawaiian Airlines</option>
+		<option value="LAN">LAN: LATAM Airlines</option>
+		<option value="LCO">LCO: Ladeco S.A</option>
+		<option value="LJB">LJB: Al Jabeer</option>
+		<option value="LPE">LPE: LAN Peru</option>
+		<option value="MVG">MVG: Moldova</option>
+		<option value="N11">N11: UFO</option>
+		<option value="N19">N19: UFO</option>
+		<option value="N29">N29: UFO</option>
+		<option value="N30">N30: UFO</option>
+		<option value="N34">N34: UFO</option>
+		<option value="N41">N41: UFO</option>
+		<option value="N43">N43: UFO</option>
+		<option value="N47">N47: UFO</option>
+		<option value="N50">N50: UFO</option>
+		<option value="N67">N67: UFO</option>
+		<option value="PEG">PEG: Pegasus Elite Aviation</option>
+		<option value="SPA">SPA: Sierra Pacific Airlines</option>
+		<option value="TES">TES: Aircompany Skytest</option>
+		<option value="UPS">UPS: United Postal Service</option>
+	</select>
+</div>
+<div>
+	Flight Number: <input type="text" id="FLI_NUM"/><br/>
+</div>
+<div>
+	Departure Date: from <input type="text" id="DepDate_from" placeholder="format: 'yyyymmdd' i.e 20140106" size=30> to <input type="text" id="DepDate_to" placeholder="i.e 20140629"> 
+</div>
+<div>
+	Arrival Date: from <input type="text" id="ArrDate_from" placeholder="i.e 20140106">	to <input type="text" id="ArrDate_to" placeholder="i.e 20140629">	
+</div>
+<div>
+	Departure Hours: from <input type="text" id="DepHours_from" placeholder="format: 'HH:mm:ss' i.e 17:03:26" size=30> to <input type="text" id="DepDate_to" placeholder="i.e 17:03:26"> 
+</div>
+<div>
+	Arrival Hours: from <input type="text" id="ArrHours_from" placeholder="i.e 17:03:26">	to <input type="text" id="ArrDate_to" placeholder="i.e 17:03:26">	
+</div>
+<div>
+	Radius Search:
+	<input type="text" id="radius" size="3"> nm of the Airport: 
+		<select id="APRT"> 
+			<option value="">Select by Airport</option>
+			<option value="LGA">LGA: LaGuardia Airport</option>
+			<option value="JFK">JFK: John F. Kennedy International Airport</option>
+			<option value="MIA">MIA: Miami International Airport</option>
+			<option value="SFO">SFO: San Francisco International Airport</option>
+			<option value="DFW">DFW: Dallas/Fort Worth International Airport</option>
+		</select>
+		OR Coordinates, latitude:<input type="text" id="lat" size="10" placeholder="25.7933"> longitude:<input type="text" id="long" size="10" placeholder="-80.2906"> 
+
+</div>
+<div>
+	Number of plot: <input type="text" id="num_plot" value='1500'> 
+</div>
+<div>
+Aggregation
+</div>
+<div>
+	<button id="search_button" onclick="search()">Elastic Search</button>
+	<!--<button id="hide" onclick="hide()">Hide</button>
+	<button id="show" onclick="show()">Show</button>-->
+</div>
