@@ -87,10 +87,10 @@
 	Arrival Date: from <input type="text" id="ArrDate_from" placeholder="i.e 20140106">	to <input type="text" id="ArrDate_to" placeholder="i.e 20140629">	
 </div>
 <div>
-	Departure Hours: from <input type="text" id="DepHours_from" placeholder="format: 'HH:mm:ss' i.e 17:03:26" size=30> to <input type="text" id="DepDate_to" placeholder="i.e 17:03:26"> 
+	Departure Hours: from <input type="text" id="DepTime_from" placeholder="format: 'HH:mm:ss' i.e 17:03:26" size=30> to <input type="text" id="DepTime_to" placeholder="i.e 17:03:26"> 
 </div>
 <div>
-	Arrival Hours: from <input type="text" id="ArrHours_from" placeholder="i.e 17:03:26">	to <input type="text" id="ArrDate_to" placeholder="i.e 17:03:26">	
+	Arrival Hours: from <input type="text" id="ArrTime_from" placeholder="i.e 17:03:26">	to <input type="text" id="ArrTime_to" placeholder="i.e 17:03:26">	
 </div>
 <div>
 	Radius Search:
@@ -107,13 +107,16 @@
 
 </div>
 <div>
-	Number of plot: <input type="text" id="num_plot" value='1500'> 
+	Number of plot: <input type="text" id="num_plot" placeholder='default=5000'> 
 </div>
 <div>
 Aggregation
 </div>
 <div>
-	<button id="search_button" onclick="search()">Elastic Search</button>
+	<button onclick="search()">Elastic Search</button>
+	<button onclick="previous()">View Previous</button>
+	<button onclick="next()">View Next</button>	
+	<p id="demo_adress">
 	<!--<button id="hide" onclick="hide()">Hide</button>
 	<button id="show" onclick="show()">Show</button>-->
 </div>

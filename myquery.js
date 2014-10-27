@@ -35,7 +35,7 @@ function generateFLI_NUM(){
 function generateArrDate(){
 	var temp='';
 	if ($('#ArrDate_from').val() !==''){
-		temp = '{"range": {"AIR.ARR_ESTIMATE": {"from":"' + $('#ArrDate_from').val() + '","to":"'+ $('#ArrDate_to').val() +'"}}},';
+		temp = '{"range": {"AIR.ARR_EST_DATE": {"from":"' + $('#ArrDate_from').val() + '","to":"'+ $('#ArrDate_to').val() +'"}}},';
 	}
 	return temp;
 }
@@ -46,18 +46,56 @@ function generateDepDate(){
 	}
 	return temp;
 }
+function generateArrTime(){
+	var temp='';
+	if ($('#ArrTime_from').val() !==''){
+		temp = '{"range": {"AIR.ARR_EST_TIME": {"from":"' + $('#ArrTime_from').val() + '","to":"'+ $('#ArrTime_to').val() +'"}}},';
+	}
+	return temp;
+}
+function generateDepTime(){
+	var temp='';
+	if ($('#DepTime_from').val() !==''){
+		temp = '{"range": {"AIR.ORIG_TIME": {"from":"' + $('#DepTime_from').val() + '","to":"'+ $('#DepTime_to').val() +'"}}},';
+	}
+	return temp;
+}
+var from_=0;
+function next(){
+	dispsize_ = $('#num_plot').val();
+	if (dispsize_ == ''){
+		dispsize_ = 5000;
+	}
+	from_ = from_ + parseInt(dispsize_);
+	search()
+}
+
+function previous(){
+	dispsize_ = $('#num_plot').val();
+	if (dispsize_ == ''){
+		dispsize_ = 5000;
+	}
+	from_= from_ - dispsize_;
+	if (from_ <0) {
+		from_ = 0;
+	}
+	search()
+}
+
 function nm2km(){	
 	if ($('#radius').val() !==''){
 		var temp = $('#radius').val()*1.852;
 	}
 	return temp;
 }
-function coord(){
+function get_coord(){
 	var temp='';
 	if ($('#lat').val()!=='' && $('#long').val()!==''){
+	//alert('latlongselected')
 		temp = '['+$('#long').val()+','+$('#lat').val()+']';
 	}
 	else if ($('#APRT').val()!==''){
+		//alert('aprt selected')
 		if 	($('#APRT').val() == 'LGA'){
 			temp = '[-73.8726,40.7772]';
 		}
@@ -78,23 +116,30 @@ function coord(){
 }
 function generateRadius(){
 	var temp='';
-	temp = '{"query":{"filtered":{"query":{"match_all":{}},"filter":{"and":[{"geo_shape":{"LOCATION":{"shape":{"type":"circle","coordinates":'+ coord()+',"radius":"'+nm2km()+'km"}}}}]}}}}'
+	temp = '{"query":{"filtered":{"query":{"match_all":{}},"filter":{"and":[{"geo_shape":{"LOCATION":{"shape":{"type":"circle","coordinates":'+ get_coord()+',"radius":"'+nm2km()+'km"}}}}]}}}}'
 	//alert(temp)
 	return temp;
 }
 function generateQuery(){
 	temp='';
-	if ($('#DEPT_APRT')=='' && $('#ARR_APRT')==''&& $('#AirlineCode')==''&& $('#FLI_NUM')==''){
+	if ($('#DEPT_APRT').val()=='' && $('#ARR_APRT').val()==''&& $('#AirlineCode').val()==''&& $('#FLI_NUM').val()==''){
 		alert('Please select at least one category');
 	}
-	else if ($('#radius').val()!==''){
-	//alert($('#radius').val())
+	else if ($('#radius').val()!==''&& ($('#DEPT_APRT').val()!== '' && $('#ARR_APRT').val()!==''&& $('#AirlineCode').val()!==''&& $('#FLI_NUM').val()!=='')){
+		//alert('radius')
+		//alert($('#DEPT_APRT').val())
 		temp = generateRadius();
 	}
-	else if($('#DEPT_APRT')!== '' || $('#ARR_APRT')!==''|| $('#AirlineCode')!==''|| $('#FLI_NUM')!==''){
-		temp = removeLastComma(generateHeader() + generateARL_COD() + generateDEP_ARP() + generateARR_APRT() + generateFLI_NUM() + generateArrDate()+ generateDepDate()+']}}}}}}}}');
+	else if($('#radius').val()=='' && ($('#DEPT_APRT').val()!== '' || $('#ARR_APRT').val()!==''|| $('#AirlineCode').val()!==''|| $('#FLI_NUM').val()!=='')){
+		//alert('not radius')
+		temp = removeLastComma(generateHeader() + generateARL_COD() + generateDEP_ARP() + generateARR_APRT() + generateFLI_NUM() + generateArrDate()+ generateDepDate() + generateDepTime()+ generateArrTime()+']}}}}}}}}');
+	}
+	else if($('#radius').val()!=='' && ($('#DEPT_APRT').val()!== '' || $('#ARR_APRT').val()!==''|| $('#AirlineCode').val()!==''|| $('#FLI_NUM').val()!=='')){
+		//alert('city and radius')
+		temp = generateRadius().substring(0, + generateRadius().length-5) + ',' + removeLastComma(generateHeader().substring(56, + generateHeader().length) + generateARL_COD() + generateDEP_ARP() + generateARR_APRT() + generateFLI_NUM() + generateArrDate()+ generateDepDate() + generateDepTime()+ generateArrTime()+']}}}}}]}}}}'); 
 	}
 	//document.getElementById("demo_adress").innerHTML=temp;
+	//alert(temp)
 	//$("#query").html(library.json.prettyPrint(JSON.parse(temp)));
 	return temp;
 }
@@ -144,14 +189,33 @@ $(document).ready(function () {
 	$('#results').hide();
 });*/
 //---------------------------------------SEARCH----------------------------------------
+function DispSize() {
+		var dispsize_='';
+		var query1='';
+		dispsize_ = $('#num_plot').val()	
+		if (dispsize_ == ''){
+			dispsize_=5000;
+			query1 = "from="+from_+"&size="+dispsize_;
+					}
+		else if (isNaN(dispsize_) == 0){
+			query1= "from="+from_+"&size="+dispsize_;
+		}
+		else if (isNaN(dispsize_) == 1){
+			alert("Not a Number")	
+		}
+		//alert(query)
+	return query1;	
+}
 var responseText = '';
 // var obj = {};
 
 function search() {
 	// spinner.start(target);
 	// var url = "http://128.61.186.135:9200/" + 'faa_nextor_traj/_search?size=' + $('#num_plot').val()
-	var url = "http://localhost:9200/" + 'faa_nextor_traj/_search?size='+ $('#num_plot').val()
-	
+	// var url = "http://localhost:9200/" + 'faa_nextor_traj/_search?size='+ $('#num_plot').val()
+	var url = "http://localhost:9200/" + 'faa_nextor_traj/_search?' + DispSize();
+	// var url = "http://10.7.121.27:9200/" + DispSize();
+	$("#demo_adress").html(DispSize());
 	var client = new XMLHttpRequest();
 	client.open("POST", url, false);
 	client.setRequestHeader("Content-Type", "text/plain");

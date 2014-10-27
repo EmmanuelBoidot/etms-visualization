@@ -47,8 +47,15 @@ refresh_info_panel();
 
 map.scrollWheelZoom.disable();
 
+map.on('zoomstart', function() {
+    opacity_val = d3.selectAll('path').style('stroke-opacity');
+    // console.log(opacity_val);
+});
+
 map.on('zoomend', function() {
     refresh_info_panel();
+    // console.log(opacity_val);
+    update_opacity(opacity_val);
 });
 
 // map.on('viewreset', function(e) {
@@ -58,6 +65,7 @@ map.on('zoomend', function() {
 colors = ['red','blue','green','black','orange'];
 
 var searched_flights = [],displayed_flights=[], selected_flight=[];
+var selected_flight_index = -1;
 var displayed_flights = [];
 var flights = [];
 var airlines_list = {}, airlines = [];
@@ -121,6 +129,21 @@ d3.select("#minus-button").on("mousedown", function() {
 	val = d3.select("#nOpacity_value").property("value")/1;
 	val = val/1000-.01 // corresponds to .01 decrease
 	update_opacity(val);
+});
+
+d3.select("#reduce-button").on("mousedown", function() {
+	if (d3.selectAll("#info_selected_flight").style("display")=="block"){
+		d3.selectAll("#info_selected_flight").style("display","none")
+		d3.selectAll("#reduce-button").text("+")
+		// selected_flight_index=-1;
+		update_opacity();
+	} else {
+		if (selected_flight_index!=-1){
+			d3.selectAll("#info_selected_flight").style("display",null)
+			d3.selectAll("#reduce-button").text("-")
+			update_opacity(0.02);
+		}
+	}
 });
 
 d3.select("#save").on("click", function(){
@@ -194,6 +217,7 @@ function update_opacity(nOpacity) {
 
 	// update the paths opacity
 	g.selectAll("path")
+		.filter(function(d,i){return i!=selected_flight_index;})
 		.style("stroke-opacity", nOpacity);
 }
 
@@ -221,8 +245,9 @@ function draw_flights(mflights){
 			.on("mouseenter", function(d) {
 				popup_create2(d.properties);reset_popup_timer();
 			})
-			.on("click", function(d) {
-				display_flight_info(d);
+			.on("click", function(d,i) {
+				display_flight_info(d,i);
+				update_opacity(0.02);
 				popup_create2(d.properties);
 				popupTimer = setTimeout(fade_out_popup, 10000);
 			});
@@ -249,7 +274,9 @@ function draw_flights(mflights){
 			g .attr("transform", "translate(" + -topLeft[0] + "," 
 			                                  + -topLeft[1] + ")");
 
-			opacity_val = d3.max([0.10,10*0.99/d3_features[0].length]);
+			if (opacity_val==1.0){
+				opacity_val = d3.max([0.10,10*0.99/d3_features[0].length]);
+			}
 			// initialize the path data	
 			d3_features.attr("d", path)
 				.style("fill-opacity", 0.0)
@@ -258,6 +285,15 @@ function draw_flights(mflights){
 				})
 				.style("stroke-opacity", opacity_val)
 				.attr('fill','blue');
+
+			// make selected flight more opaque
+			if (selected_flight_index!=-1){
+				d3.selectAll('path')
+					.filter(function(o,j){
+						return j==selected_flight_index;
+					})
+					.style("stroke-opacity", 1.0)
+			}	
 			// adjust the text on the range slider
 			d3.select("#nOpacity_text").text(opacity_val.toFixed(3));
 			d3.select("#nOpacity_value").property("value", opacity_val*1000);
@@ -273,10 +309,13 @@ function draw_flights(mflights){
 
 	// hide the info for the selected flight
 	d3.selectAll("#info_selected_flight").style("display","none");
+	selected_flight_index = -1;
 }
 
-function display_flight_info(d){
+function display_flight_info(d,i){
 	selected_flight = d;
+	selected_flight_index = i;
+
 	info = d3.selectAll("#info_selected_flight");
 
 	info.select("#sel_flight_ori_dest").text(d.properties.DEPT_APRT + " -> " + d.properties.ARR_APRT);
@@ -293,6 +332,11 @@ function display_flight_info(d){
 	info.select("#sel_flight_passengers_num").text("#Passengers: ")
 	info.select("#sel_flight_passengers_corres").text("#Correspondances: ")
 
+	d3.selectAll('path')
+		.filter(function(o,j){
+			return j==i;
+		})
+		.style("stroke-opacity", 1);
 	plot_altitude(d);
 	plot_groundspeed(d);
 
