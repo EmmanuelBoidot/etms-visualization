@@ -245,9 +245,11 @@ function search() {
 		    delete searched_flights.features[i]._source.POSITION;
 		    // searched_flights.features[i].geometry.type = "LineString"
 		    searched_flights.features[i].properties = searched_flights.features[i]._source.AIR[0];
+		    searched_flights.features[i].metrics = compute_metrics(searched_flights.features[i])
 		}
 		console.log("start drawing");
 		draw_flights(searched_flights);
+		draw_metrics(searched_flights);
 		console.log("done drawing");
 		// d3.json(client.responseText, function(error,data){
 		// 	if (!error && typeof data !== 'undefined'){

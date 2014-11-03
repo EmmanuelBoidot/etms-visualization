@@ -1,3 +1,98 @@
+// var dists = [], times = []
+function draw_metrics(mflights){
+  if (mflights !== "undefined" && mflights.features.length>0){
+    //
+    var ts = [];
+    var times = [], dists = [];
+    mflights.features.forEach(function(o,i) {
+      ts.push({data:o.metrics.achieved_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
+      ts.push({data:o.metrics.achieved_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
+      ts.push({data:o.metrics.achieved_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
+      dists.push(o.metrics.achieved_dist40to40);
+      dists.push(o.metrics.achieved_dist40to100)
+      dists.push(o.metrics.achieved_dist100to100)
+      times.push(o.metrics.travel_time_40to40);
+      times.push(o.metrics.travel_time_40to100)
+      times.push(o.metrics.travel_time_100to100)
+    });
+    // ts = ts40to40.concat(ts40to100.concat(ts100to100));
+// console.log(dists)
+  var color = d3.scale.category10();
+
+  var size = {
+    height: 200,
+    width: 840
+  }
+  var rightOffset = 40, topOffset = 20;
+
+  var scale = {
+    x: d3.scale.linear().domain([d3.min(dists), d3.max(dists)])
+        .rangeRound([0, size.width-50]),
+    y: d3.scale.linear().domain([d3.min(times), d3.max(times)])
+        .range([size.height, 15])        
+  }
+    
+  d3.selectAll('#flighttime_vs_distance').selectAll('svg').remove();
+  var chart = d3.selectAll('#flighttime_vs_distance')
+    .style("display",null)
+    .append('svg:svg')
+    .data(ts)
+    .attr('width', size.width+rightOffset)
+    .attr('height', size.height+50)
+    .append('svg:g');
+
+  chart.selectAll('circle.dot')
+    .data(ts).enter().append('svg:circle')
+    .attr('class', 'dot')
+    .attr('cx', function(o, i){return scale.x(o.data)+rightOffset;})
+    .attr('cy', function(o, i){return scale.y(o.time)+topOffset;})
+    .attr('r', 1.5)
+    .style("fill", function(d){ return color(d.typecode);})
+
+  var xAxis = d3.svg.axis()
+    .scale(scale.x)
+    .orient('bottom')
+    // .ticks(d3.time.minute, 30)
+    // .tickFormat(d3.time.format('%H:%M'))
+    // .tickPadding(5);
+    // .tickFormat(d3.time.format('%H:%M'))
+    // .tickSize(5)
+    // .tickPadding(8);
+  var yAxis = d3.svg.axis()
+    .scale(scale.y)
+    .orient("left");
+
+  chart.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate("+ rightOffset+","+(200+topOffset)+")")
+    .call(xAxis);
+  chart.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate("+ rightOffset+","+topOffset+")")
+    .call(yAxis);
+  }
+
+  typename = ["40to40","40to100","100to100"];
+  var legend = chart.selectAll(".legend")
+      .data(color.domain())
+      .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(-680," + (50+(i * 20)) + ")"; });
+
+  legend.append("rect")
+      .attr("x", size.width - 18)
+      .attr("width", 6)
+      .attr("height", 6)
+      .style("fill", color);
+
+  legend.append("text")
+      .attr("x", size.width - 24)
+      .attr("y", 9)
+      .attr("dy", ".10em")
+      .style("text-anchor", "end")
+      .text(function(d,i) { return typename[i]; });
+}
+
 function plot_altitude(d){
     var ts = []
     d.properties.POSIT_DATE.forEach(function(o,i) {

@@ -48,7 +48,7 @@ refresh_info_panel();
 map.scrollWheelZoom.disable();
 
 map.on('zoomstart', function() {
-    opacity_val = d3.selectAll('path').style('stroke-opacity');
+    opacity_val = parseFloat(d3.selectAll('path').style('stroke-opacity'));
     // console.log(opacity_val);
 });
 
@@ -108,10 +108,12 @@ d3.json("json/multi_traj_raw2.json", function(error,data){
 	    delete searched_flights.features[i]._source.POSITION;
 	    // searched_flights.features[i].geometry.type = "LineString"
 	    searched_flights.features[i].properties = searched_flights.features[i]._source.AIR[0];
+	    searched_flights.features[i].metrics = compute_metrics(searched_flights.features[i])
 	}
 	console.log("start drawing");
 	flights = searched_flights;
 	draw_flights(searched_flights);
+	draw_metrics(searched_flights);
 	console.log("done drawing");
 	}
 });
@@ -253,6 +255,8 @@ function draw_flights(mflights){
 			});
 
 
+
+
 		map.on("viewreset", reset);
 
 		reset();
@@ -312,6 +316,27 @@ function draw_flights(mflights){
 	selected_flight_index = -1;
 }
 
+
+///////////////added by Aude
+function getDistanceFromLatLonInNm(lat1,lon1,lat2,lon2) {
+  var R = 6371*0.53996; // Radius of the earth in NM
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1); 
+  var a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+    ; 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180)
+}
+//////////////////////////////////
+
 function display_flight_info(d,i){
 	selected_flight = d;
 	selected_flight_index = i;
@@ -339,9 +364,79 @@ function display_flight_info(d,i){
 		.style("stroke-opacity", 1);
 	plot_altitude(d);
 	plot_groundspeed(d);
-
 	info.style("display",null);
+	compute_metrics(d)
 }
+	
+function compute_metrics(d){
+	// find the 40NM and 100Nm points from the departure and arrival apts
+	//initialize
+	depapt_latlon=d.geometry.coordinates[0];
+	arrapt_latlon=d.geometry.coordinates[d.geometry.coordinates.length-1];
+	if (getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],arrapt_latlon[0],arrapt_latlon[1]) >100){
+		pt40dep=d.geometry.coordinates[1]; i40dep=1;
+		while (getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],pt40dep[0],pt40dep[1])<40)
+			{i40dep=i40dep+1;
+			pt40dep=d.geometry.coordinates[i40dep];}
+
+		// console.log(d.geometry.coordinates)
+		pt100dep=d.geometry.coordinates[1]; i100dep=1;
+		//console.log(pt100dep)
+		while (getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],pt100dep[0],pt100dep[1])<100)
+			{i100dep=i100dep+1;
+			pt100dep=d.geometry.coordinates[i100dep];}
+		
+
+		
+		pt40arr=d.geometry.coordinates[d.geometry.coordinates.length-2]; i40arr=d.geometry.coordinates.length-2;
+		while (getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],pt40arr[0],pt40arr[1])<40)
+			{i40arr=i40arr-1;
+			pt40arr=d.geometry.coordinates[i40arr];}
+
+		pt100arr=d.geometry.coordinates[d.geometry.coordinates.length-2]; i100arr=d.geometry.coordinates.length-2;
+		while (getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],pt100arr[0],pt100arr[1])<100)
+			{i100arr=i100arr-1;
+			pt100arr=d.geometry.coordinates[i100arr];}
+		// Compute the achieved distance (last point-first point)
+		achieved_dist40to40=getDistanceFromLatLonInNm(pt40dep[0],pt40dep[1],pt40arr[0],pt40arr[1]);
+		achieved_dist40to100=getDistanceFromLatLonInNm(pt40dep[0],pt40dep[1],pt100arr[0],pt100arr[1]);
+		achieved_dist100to100=getDistanceFromLatLonInNm(pt100dep[0],pt100dep[1],pt100arr[0],pt100arr[1]);
+		// Compute the flight time for each
+		travel_time_40to40=(d.geometry.times[i40arr]-d.geometry.times[i40dep])/60000;// in minutes
+		travel_time_40to100=(d.geometry.times[i100arr]-d.geometry.times[i40dep])/60000;
+		travel_time_100to100=(d.geometry.times[i100arr]-d.geometry.times[i100dep])/60000;
+
+		//Compute the total flight distance from 40 to 40 - sum the distance between each consecutive point
+		total_dist40to40=0;
+		for (var ipt=i40dep; ipt < i40arr; ipt++) {
+			total_dist40to40=total_dist40to40+getDistanceFromLatLonInNm(d.geometry.coordinates[ipt][0],d.geometry.coordinates[ipt][1],
+				d.geometry.coordinates[ipt+1][0],d.geometry.coordinates[ipt+1][1]);
+		}
+
+		metric={achieved_dist40to40:achieved_dist40to40,
+			achieved_dist40to100:achieved_dist40to100,
+			achieved_dist100to100:achieved_dist100to100,
+			travel_time_40to40:travel_time_40to40,
+			travel_time_40to100:travel_time_40to100,
+			travel_time_100to100:travel_time_100to100,
+			total_dist40to40:total_dist40to40};
+
+	}
+	else {
+		metric={achieved_dist40to40:-1,
+			achieved_dist40to100:-1,
+			achieved_dist100to100:-1,
+			travel_time_40to40:-1,
+			travel_time_40to100:-1,
+			travel_time_100to100:-1,
+			total_dist40to40:-1};
+	}
+	// d.metrics = metric;
+	//console.log(metric);
+	return metric;
+	
+}
+
         
 function set_query_status(drawing){
 	if (drawing){
