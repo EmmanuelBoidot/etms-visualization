@@ -7,15 +7,24 @@ function draw_metrics(mflights){
     var ts = [];
     var times = [], dists = [];
     mflights.forEach(function(o,i) {
-      ts.push({data:o.metrics.achieved_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
-      ts.push({data:o.metrics.achieved_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
-      ts.push({data:o.metrics.achieved_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
-      dists.push(o.metrics.achieved_dist40to40);
-      dists.push(o.metrics.achieved_dist40to100)
-      dists.push(o.metrics.achieved_dist100to100)
-      times.push(o.metrics.travel_time_40to40);
-      times.push(o.metrics.travel_time_40to100)
-      times.push(o.metrics.travel_time_100to100)
+      if (o.metrics.total_dist40to40>0){ //do not use the weird points
+        //ts.push({data:o.metrics.achieved_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
+        //ts.push({data:o.metrics.achieved_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
+        //ts.push({data:o.metrics.achieved_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
+        //dists.push(o.metrics.achieved_dist40to40);
+        //dists.push(o.metrics.achieved_dist40to100);
+        //dists.push(o.metrics.achieved_dist100to100);
+        ts.push({data:o.metrics.total_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
+        ts.push({data:o.metrics.total_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
+        ts.push({data:o.metrics.total_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
+        dists.push(o.metrics.total_dist40to40);
+        dists.push(o.metrics.total_dist40to100);
+        dists.push(o.metrics.total_dist100to100);
+        times.push(o.metrics.travel_time_40to40);
+        times.push(o.metrics.travel_time_40to100)
+        times.push(o.metrics.travel_time_100to100)
+      }
+
     });
     // ts = ts40to40.concat(ts40to100.concat(ts100to100));
 // console.log(dists)
@@ -78,7 +87,7 @@ function draw_metrics(mflights){
       .data(color.domain())
       .enter().append("g")
       .attr("class", "legend")
-      .attr("transform", function(d, i) { return "translate(-600," + (50+(i * 20)) + ")"; });
+      .attr("transform", function(d, i) { return "translate(-50," + (50+(i * 20)) + ")"; });
 
   legend.append("rect")
       .attr("x", size.width - 18)

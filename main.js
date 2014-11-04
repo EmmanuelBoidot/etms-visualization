@@ -386,8 +386,6 @@ function compute_metrics(d){
 			{i100dep=i100dep+1;
 			pt100dep=d.geometry.coordinates[i100dep];}
 		
-
-		
 		pt40arr=d.geometry.coordinates[d.geometry.coordinates.length-2]; i40arr=d.geometry.coordinates.length-2;
 		while (getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],pt40arr[0],pt40arr[1])<40)
 			{i40arr=i40arr-1;
@@ -408,18 +406,43 @@ function compute_metrics(d){
 
 		//Compute the total flight distance from 40 to 40 - sum the distance between each consecutive point
 		total_dist40to40=0;
+		total_dist40to100=0;
+		total_dist100to100=0;
 		for (var ipt=i40dep; ipt < i40arr; ipt++) {
 			total_dist40to40=total_dist40to40+getDistanceFromLatLonInNm(d.geometry.coordinates[ipt][0],d.geometry.coordinates[ipt][1],
 				d.geometry.coordinates[ipt+1][0],d.geometry.coordinates[ipt+1][1]);
 		}
-
+		for (var ipt=i40dep; ipt < i100arr; ipt++) {
+			total_dist40to100=total_dist40to100+getDistanceFromLatLonInNm(d.geometry.coordinates[ipt][0],d.geometry.coordinates[ipt][1],
+				d.geometry.coordinates[ipt+1][0],d.geometry.coordinates[ipt+1][1]);
+		}
+		for (var ipt=i100dep; ipt < i100arr; ipt++) {
+			total_dist100to100=total_dist100to100+getDistanceFromLatLonInNm(d.geometry.coordinates[ipt][0],d.geometry.coordinates[ipt][1],
+				d.geometry.coordinates[ipt+1][0],d.geometry.coordinates[ipt+1][1]);
+		}	
+		//check for unusually small values - ie length of trajectory 
+		apt2apt_dist=getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],arrapt_latlon[0],arrapt_latlon[1]);
+		if (total_dist40to40<apt2apt_dist-80){ //underestimation - to be verified - filtered weird trajectories
+			chieved_dist40to40=-1;
+			achieved_dist40to100=-1;
+			achieved_dist100to100=-1;
+			total_dist40to40=-1;
+			total_dist40to100=-1;
+			total_dist100to100=-1;
+			travel_time_40to40=-1;
+			travel_time_40to100=-1;
+			travel_time_100to100=-1;
+		}
+		//return values
 		metric={achieved_dist40to40:achieved_dist40to40,
 			achieved_dist40to100:achieved_dist40to100,
 			achieved_dist100to100:achieved_dist100to100,
 			travel_time_40to40:travel_time_40to40,
 			travel_time_40to100:travel_time_40to100,
 			travel_time_100to100:travel_time_100to100,
-			total_dist40to40:total_dist40to40};
+			total_dist40to40:total_dist40to40,
+			total_dist40to100:total_dist40to100,
+			total_dist100to100:total_dist100to100};
 
 	}
 	else {
@@ -429,7 +452,9 @@ function compute_metrics(d){
 			travel_time_40to40:-1,
 			travel_time_40to100:-1,
 			travel_time_100to100:-1,
-			total_dist40to40:-1};
+			total_dist40to40:-1,
+			total_dist40to100:-1,
+			total_dist100to100:-1};
 	}
 	// d.metrics = metric;
 	//console.log(metric);
