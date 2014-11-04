@@ -113,7 +113,7 @@ d3.json("json/multi_traj_raw2.json", function(error,data){
 	console.log("start drawing");
 	flights = searched_flights;
 	draw_flights(searched_flights);
-	draw_metrics(searched_flights);
+	draw_metrics(searched_flights.features);
 	console.log("done drawing");
 	}
 });
@@ -306,8 +306,8 @@ function draw_flights(mflights){
 		alert("No flights for the corresponding query");
 	}
 	set_query_status(0);
-	displayed_flights = g.selectAll("path")
-		.filter(function(d){return d.displayed=="True"})[0];
+	displayed_flights = searched_flights.features//g.selectAll("path")
+		.filter(function(d){return d.displayed=="True"});
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 	d3.select("#info_flights_ARL").text("#Airlines: "+selected_ARL.length);
 
@@ -618,8 +618,9 @@ function update_airlines(mflights){
 					.style("display", null);
 				selected_ARL.push(d.name)
 			}
-			displayed_flights = g.selectAll("path")
-				.filter(function(d){return d.displayed=="True"})[0];
+			displayed_flights = searched_flights.features//g.selectAll("path")
+				.filter(function(d){return d.displayed=="True"});
+			draw_metrics(displayed_flights);
 			// console.log(displayed_flights.length);
 			d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 			d3.select("#info_flights_ARL").text("#Airlines: "+selected_ARL.length);
@@ -676,8 +677,9 @@ function update_ori_dest(mflights){
 					.style("display", null);
 				selected_OD.push(d.name)
 			}
-			displayed_flights = g.selectAll("path")
-				.filter(function(d){return d.displayed=="True"})[0];
+			displayed_flights = searched_flights.features//g.selectAll("path")
+				.filter(function(d){return d.displayed=="True"});
+			draw_metrics(displayed_flights);
 			// console.log(displayed_flights.length);
 			d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 			d3.select("#info_flights_ARL").text("#Airlines: "+selected_ARL.length);
@@ -699,8 +701,9 @@ function checkAll_OD(){
 	    selected_OD.push(key);
 	}	
 
-	displayed_flights = g.selectAll("path")
-		.filter(function(d){return d.displayed=="True"})[0];
+	displayed_flights = searched_flights.features//g.selectAll("path")
+		.filter(function(d){return d.displayed=="True"});
+	draw_metrics(displayed_flights);
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 
 	update_opacity();
@@ -714,8 +717,9 @@ function uncheckAll_OD(){
 		.property('checked',false);
     selected_OD = [];
 
-	displayed_flights = g.selectAll("path")
-		.filter(function(d){return d.displayed=="True"})[0];
+	displayed_flights = searched_flights.features//g.selectAll("path")
+		.filter(function(d){return d.displayed=="True"});
+	draw_metrics(displayed_flights);
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 }
 
@@ -733,12 +737,13 @@ function checkAll_ARL(){
 	    selected_ARL.push(key);
 	}
 	
-	displayed_flights = g.selectAll("path")
-		.filter(function(d){return d.displayed=="True"})[0];
+	displayed_flights = searched_flights.features//g.selectAll("path")
+		.filter(function(d){return d.displayed=="True"});
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 	d3.select("#info_flights_ARL").text("#Airlines: "+selected_ARL.length);
 
 	update_opacity();
+	draw_metrics(displayed_flights);
 }
 function uncheckAll_ARL(){
     d3.select("#airlines-list").selectAll('label').selectAll('input').property('checked',false);
@@ -749,8 +754,9 @@ function uncheckAll_ARL(){
 		.property('checked',false);
     selected_ARL =[];
 	
-	displayed_flights = g.selectAll("path")
-		.filter(function(d){return d.displayed=="True"})[0];
+	displayed_flights = searched_flights.features//g.selectAll("path")
+		.filter(function(d){return d.displayed=="True"});
+	draw_metrics(displayed_flights);
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 	d3.select("#info_flights_ARL").text("#Airlines: "+selected_ARL.length);
 }

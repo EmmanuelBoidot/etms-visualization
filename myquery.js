@@ -249,7 +249,7 @@ function search() {
 		}
 		console.log("start drawing");
 		draw_flights(searched_flights);
-		draw_metrics(searched_flights);
+		draw_metrics(searched_flights.features);
 		console.log("done drawing");
 		// d3.json(client.responseText, function(error,data){
 		// 	if (!error && typeof data !== 'undefined'){

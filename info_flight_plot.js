@@ -1,10 +1,12 @@
 // var dists = [], times = []
 function draw_metrics(mflights){
-  if (mflights !== "undefined" && mflights.features.length>0){
+  // console.log(mflights);
+  if (mflights !== "undefined" && mflights.length>0)
+  {
     //
     var ts = [];
     var times = [], dists = [];
-    mflights.features.forEach(function(o,i) {
+    mflights.forEach(function(o,i) {
       ts.push({data:o.metrics.achieved_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
       ts.push({data:o.metrics.achieved_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
       ts.push({data:o.metrics.achieved_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
@@ -70,14 +72,13 @@ function draw_metrics(mflights){
     .attr("class", "axis")
     .attr("transform", "translate("+ rightOffset+","+topOffset+")")
     .call(yAxis);
-  }
 
-  typename = ["40to40","40to100","100to100"];
+  typename = ["40 NM to 40 NM","40 NM to 100 NM","100 NM to 100 NM"];
   var legend = chart.selectAll(".legend")
       .data(color.domain())
       .enter().append("g")
       .attr("class", "legend")
-      .attr("transform", function(d, i) { return "translate(-680," + (50+(i * 20)) + ")"; });
+      .attr("transform", function(d, i) { return "translate(-600," + (50+(i * 20)) + ")"; });
 
   legend.append("rect")
       .attr("x", size.width - 18)
@@ -91,6 +92,7 @@ function draw_metrics(mflights){
       .attr("dy", ".10em")
       .style("text-anchor", "end")
       .text(function(d,i) { return typename[i]; });
+    }
 }
 
 function plot_altitude(d){
