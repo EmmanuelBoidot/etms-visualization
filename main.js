@@ -373,7 +373,8 @@ function compute_metrics(d){
 	//initialize
 	depapt_latlon=d.geometry.coordinates[0];
 	arrapt_latlon=d.geometry.coordinates[d.geometry.coordinates.length-1];
-	if (getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],arrapt_latlon[0],arrapt_latlon[1]) >100){
+	apt2apt_dist=getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],arrapt_latlon[0],arrapt_latlon[1]);
+	if (apt2apt_dist>100){
 		pt40dep=d.geometry.coordinates[1]; i40dep=1;
 		while (getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],pt40dep[0],pt40dep[1])<40)
 			{i40dep=i40dep+1;
@@ -381,7 +382,6 @@ function compute_metrics(d){
 
 		// console.log(d.geometry.coordinates)
 		pt100dep=d.geometry.coordinates[1]; i100dep=1;
-		//console.log(pt100dep)
 		while (getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],pt100dep[0],pt100dep[1])<100)
 			{i100dep=i100dep+1;
 			pt100dep=d.geometry.coordinates[i100dep];}
@@ -403,27 +403,36 @@ function compute_metrics(d){
 		travel_time_40to40=(d.geometry.times[i40arr]-d.geometry.times[i40dep])/60000;// in minutes
 		travel_time_40to100=(d.geometry.times[i100arr]-d.geometry.times[i40dep])/60000;
 		travel_time_100to100=(d.geometry.times[i100arr]-d.geometry.times[i100dep])/60000;
-
+		if (travel_time_100to100<0){
+			travel_time_100to100=(d.geometry.times[i100arr+1]-d.geometry.times[i100dep-1])/60000; //a few short flights have problems with indexes otherwise
+		}
 		//Compute the total flight distance from 40 to 40 - sum the distance between each consecutive point
 		total_dist40to40=0;
 		total_dist40to100=0;
 		total_dist100to100=0;
-		for (var ipt=i40dep; ipt < i40arr; ipt++) {
+		//for (var ipt=i40dep; ipt < i40arr; ipt++) {
+		for (var ipt=i40dep-1; ipt < i40arr+1; ipt++) {
 			total_dist40to40=total_dist40to40+getDistanceFromLatLonInNm(d.geometry.coordinates[ipt][0],d.geometry.coordinates[ipt][1],
 				d.geometry.coordinates[ipt+1][0],d.geometry.coordinates[ipt+1][1]);
 		}
+		//add the extra that might me missing because no i40dep point is exactly 40 nm away from the dep apt
+		total_dist40to40=total_dist40to40+getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],d.geometry.coordinates[i40dep][0],d.geometry.coordinates[i40dep][1])+getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],d.geometry.coordinates[i40arr][0],d.geometry.coordinates[i40arr][1])-80;
+
 		for (var ipt=i40dep; ipt < i100arr; ipt++) {
 			total_dist40to100=total_dist40to100+getDistanceFromLatLonInNm(d.geometry.coordinates[ipt][0],d.geometry.coordinates[ipt][1],
 				d.geometry.coordinates[ipt+1][0],d.geometry.coordinates[ipt+1][1]);
 		}
+		total_dist40to100=total_dist40to100+getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],d.geometry.coordinates[i40dep][0],d.geometry.coordinates[i40dep][1])+getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],d.geometry.coordinates[i100arr][0],d.geometry.coordinates[i100arr][1])-140;
+		
 		for (var ipt=i100dep; ipt < i100arr; ipt++) {
 			total_dist100to100=total_dist100to100+getDistanceFromLatLonInNm(d.geometry.coordinates[ipt][0],d.geometry.coordinates[ipt][1],
 				d.geometry.coordinates[ipt+1][0],d.geometry.coordinates[ipt+1][1]);
 		}	
-		//check for unusually small values - ie length of trajectory 
-		apt2apt_dist=getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],arrapt_latlon[0],arrapt_latlon[1]);
+		total_dist100to100=total_dist100to100+getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],d.geometry.coordinates[i100dep][0],d.geometry.coordinates[i100dep][1])+getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],d.geometry.coordinates[i100arr][0],d.geometry.coordinates[i100arr][1])-200;
+
+		//check for unusually small values - ie length of trajectory 		
 		if (total_dist40to40<apt2apt_dist-80){ //underestimation - to be verified - filtered weird trajectories
-			chieved_dist40to40=-1;
+			achieved_dist40to40=-1;
 			achieved_dist40to100=-1;
 			achieved_dist100to100=-1;
 			total_dist40to40=-1;
@@ -433,6 +442,21 @@ function compute_metrics(d){
 			travel_time_40to100=-1;
 			travel_time_100to100=-1;
 		}
+		// //check for unusually large values
+		// if (total_dist40to40>apt2apt_dist*1.5){
+		// 	achieved_dist40to40=-1;
+		// 	achieved_dist40to100=-1;
+		// 	achieved_dist100to100=-1;
+		// 	total_dist40to40=-1;
+		// 	total_dist40to100=-1;
+		// 	total_dist100to100=-1;
+		// 	travel_time_40to40=-1;
+		// 	travel_time_40to100=-1;
+		// 	travel_time_100to100=-1;
+		// 	console.log(d.geometry.coordinates,apt2apt_dist,total_dist40to40)
+			
+		// }
+
 		//return values
 		metric={achieved_dist40to40:achieved_dist40to40,
 			achieved_dist40to100:achieved_dist40to100,
