@@ -207,8 +207,8 @@ function sort_geometry(mflight){
 // update the elements
 function update_opacity(nOpacity) {
 	if (!nOpacity){
-		visiblePaths = g.selectAll("path").filter(function(d){return d.displayed=='True'})[0];
-		nOpacity = d3.max([0.10,10*0.999/visiblePaths.length]);
+		// visiblePaths = g.selectAll("path").filter(function(d){return d.displayed=='True'})[0];
+		nOpacity = d3.max([0.10,9*0.999/displayed_flights.length]);
 	}
 	if (nOpacity>1){
 		nOpacity = nOpacity/1000;
@@ -216,6 +216,7 @@ function update_opacity(nOpacity) {
 	// adjust the text on the range slider
 	d3.select("#nOpacity_text").text(nOpacity.toFixed(3));
 	d3.select("#nOpacity_value").property("value", nOpacity*1000);
+	opacity_val = nOpacity;
 
 	// update the paths opacity
 	g.selectAll("path")

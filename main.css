@@ -29,8 +29,10 @@ html, body
 }
 
 body {
-  min-width: 1040px;      /* 2x LC width + RC width */
-  /*overflow: hidden;*/
+  	min-width: 1040px;      /* 2x LC width + RC width */
+  	/*overflow: hidden;*/
+  	background: #c9dbe9;
+	/*background: -webkit-linear-gradient(top, #c9dbe9 0%, #fff 100%);*/
 }
 h3{
 	margin:1em 0 1em 0;
@@ -40,7 +42,7 @@ h4{
 }
 #page_title{
 	text-align:center;
-	margin: -500px 0 0 0;
+	/*margin: -500px 0 0 0;*/
 }
 
 #map-container {
@@ -50,6 +52,7 @@ h4{
     border-color: rgb(200,200,200);
 	width: 1040px;
 	margin: 10px auto 10px auto;
+	background: white;
 }
 
 #map-container .column {
@@ -98,19 +101,30 @@ h4{
 #flight_info3{
 	float: right; width: 33%;
 }
-#display-filters{
+/*#display-filters{
 	float:left;
 	width:100%;
+}*/
+#display-filters ul{
+	background:white;
+	padding:0 0 0 20px;
+	overflow-y:auto
 }
+
 #airlines-list{
-	padding:0 2% 0 0;
-	float:left;
-	width:48%;
+	position: fixed;
+	float: left;
+	left: 0px;
+	top: 10px;
+	width: 130px;
 }
+
 #ori-dest-list{
-	padding:0 0 0 2%;
-	float:right;
-	width:48%;
+	position: fixed;
+	float: right;
+	right: 0px;
+	top: 10px;
+	width: 180px;
 }
 #statistics{
 	float:left;
@@ -119,6 +133,7 @@ h4{
 .flight_plots{
 	margin:0 auto;
 	width:900px;
+	background: white;
 }
 
 .xaxis text,
