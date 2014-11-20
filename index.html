@@ -22,7 +22,16 @@ or see http://www.gnu.org/licenses/agpl.txt.
 
 <!-- head -->
 <head>
-
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: center;    
+}
+</style>
 <!-- metatags -->
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <title>ATTiMe</title>
@@ -156,6 +165,65 @@ ga('send', 'pageview');
 			</div>
 			<div id="flighttime_vs_total_distance" class="flight_plots">
 				<h4>Flight Time VS Actual Distance</h4>
+			</div>
+			<div id="stat__achieved_distance_total_distance_flighttime" class="flight_plots">
+				<h4>Statistical Analysis:</h4>
+					<table id="myStats">
+					  <tr>
+						<th></th>
+						<th colspan="3">Achieved Distance</th>
+						<th colspan="3">Actual Distance</th>
+						<th colspan="3">Flight Time</th>
+					  </tr>
+					  <tr>
+						<td>Stats</td>
+						<td>Mean</td>
+						<td>STD</td>
+						<td>90% </br> Confidence</td>
+						<td>Mean</td>
+						<td>STD</td>
+						<td>90% </br> Confidence</td>
+						<td>Mean</td>
+						<td>STD</td>
+						<<td>90% </br> Confidence</td>
+					  </tr>
+					  <tr>
+						<td>40-40</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					  </tr>
+					  <tr>
+						<td>40-100</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					  </tr>
+					  <tr>
+						<td>100-100</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					  </tr>
+					</table>					
 			</div>
 		</div>
 		<span class="info-button" id="reduce-button">-</span>
