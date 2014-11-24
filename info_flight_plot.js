@@ -9,18 +9,18 @@ function draw_metrics(mflights){
     var times = [], dists_achieved = [];dists_total = [];
     mflights.forEach(function(o,i) {
       if (o.metrics.total_dist40to40>0 ){//&& o.metrics.total_dist40to100>0&& o.metrics.total_dist100to100>0&&o.metrics.achieved_dist40to40>0 && o.metrics.achieved_dist40to100>0&& o.metrics.achieved_dist100to100>0){ //do not use the weird points       
-        ts_total.push({data:o.metrics.achieved_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
-        ts_total.push({data:o.metrics.achieved_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
-        ts_total.push({data:o.metrics.achieved_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
-        dists_total.push(o.metrics.achieved_dist40to40);
-        dists_total.push(o.metrics.achieved_dist40to100);
-        dists_total.push(o.metrics.achieved_dist100to100);
-        ts_achieved.push({data:o.metrics.total_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
-        ts_achieved.push({data:o.metrics.total_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
-        ts_achieved.push({data:o.metrics.total_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
-        dists_achieved.push(o.metrics.total_dist40to40);
-        dists_achieved.push(o.metrics.total_dist40to100);
-        dists_achieved.push(o.metrics.total_dist100to100);
+        ts_total.push({data:o.metrics.total_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
+        ts_total.push({data:o.metrics.total_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
+        ts_total.push({data:o.metrics.total_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
+        dists_total.push(o.metrics.total_dist40to40);
+        dists_total.push(o.metrics.total_dist40to100);
+        dists_total.push(o.metrics.total_dist100to100);
+        ts_achieved.push({data:o.metrics.achieved_dist40to40, time:o.metrics.travel_time_40to40, type:"40to40", typecode:1})
+        ts_achieved.push({data:o.metrics.achieved_dist40to100, time:o.metrics.travel_time_40to100, type:"40to100", typecode:2})
+        ts_achieved.push({data:o.metrics.achieved_dist100to100, time:o.metrics.travel_time_100to100, type:"100to100", typecode:3})
+        dists_achieved.push(o.metrics.achieved_dist40to40);
+        dists_achieved.push(o.metrics.achieved_dist40to100);
+        dists_achieved.push(o.metrics.achieved_dist100to100);
         times.push(o.metrics.travel_time_40to40);
         times.push(o.metrics.travel_time_40to100);
         times.push(o.metrics.travel_time_100to100);
