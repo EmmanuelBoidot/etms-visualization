@@ -28,7 +28,7 @@ function generateAirportLists(){
 
 function getAirportLists(){
 
-	var url = "http://localhost:9200/faa_nextor_traj/_search?size=0"
+	var url = "http://localhost:9200/faa_nextor_flight_traj_plan/_search?size=0"
 	var client = new XMLHttpRequest();
 	client.open("POST", url, false);
 	client.setRequestHeader("Content-Type", "text/plain");
@@ -36,11 +36,11 @@ function getAirportLists(){
 		client.send(generateAirportLists());
 	} catch(err) {
 	    alert('Could not fetch the airport list. There is probably a connection problem with the server!\nRemember to forward port 9200 of cicero on your 9200');
-	    spinner.stop()
+	    // spinner.stop()
 	}
 	if (client.status != 200){
 		alert('There was an error with your request!\n'+client.statusText);
-		spinner.stop()
+		// spinner.stop()
     } else {
 		var obj2 = JSON.parse(client.responseText);
 		searched_DEPT_APRT = obj2.aggregations.air.dept_aprt;

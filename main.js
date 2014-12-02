@@ -4,29 +4,35 @@ var datetimeformat = d3.time.format("%Y%m%dT%H:%M:%S");
 var timeformat = d3.time.format("%H:%M");
 var map = L.map('map').setView([34.5, -95],4);
 var svg = d3.select(map.getPanes().overlayPane).append("svg");
+var g2 = svg.append("g").attr("class", "leaflet-zoom-hide");
+var g3 = svg.append("g").attr("class", "leaflet-zoom-hide");
 var g = svg.append("g").attr("class", "leaflet-zoom-hide");
+var g4 = svg.append("g").attr("class", "leaflet-zoom-hide");
 var popupTimer = null;
-var spinner_opts = {
-  lines: 17, // The number of lines to draw
-  length: 29, // The length of each line
-  width: 30, // The line thickness
-  radius: 15, // The radius of the inner circle
-  corners: 1, // Corner roundness (0..1)
-  rotate: 0, // The rotation offset
-  direction: 1, // 1: clockwise, -1: counterclockwise
-  color: '#000', // #rgb or #rrggbb or array of colors
-  speed: 1, // Rounds per second
-  trail: 50, // Afterglow percentage
-  shadow: false, // Whether to render a shadow
-  hwaccel: false, // Whether to use hardware acceleration
-  className: 'spinner', // The CSS class to assign to the spinner
-  zIndex: 2e9, // The z-index (defaults to 2000000000)
-  top: '50%', // Top position relative to parent
-  left: '50%' // Left position relative to parent
-};
-var target = document.getElementById('map');
-var spinner = new Spinner(spinner_opts).spin(target);
-spinner.stop();
+// var spinner_opts = {
+//   lines: 17, // The number of lines to draw
+//   length: 29, // The length of each line
+//   width: 30, // The line thickness
+//   radius: 15, // The radius of the inner circle
+//   corners: 1, // Corner roundness (0..1)
+//   rotate: 0, // The rotation offset
+//   direction: 1, // 1: clockwise, -1: counterclockwise
+//   color: '#000', // #rgb or #rrggbb or array of colors
+//   speed: 1, // Rounds per second
+//   trail: 50, // Afterglow percentage
+//   shadow: false, // Whether to render a shadow
+//   hwaccel: false, // Whether to use hardware acceleration
+//   className: 'spinner', // The CSS class to assign to the spinner
+//   zIndex: 2e9, // The z-index (defaults to 2000000000)
+//   top: '50%', // Top position relative to parent
+//   left: '50%' // Left position relative to parent
+// };
+
+var width = 800, height = 500;
+
+// var target = document.getElementById('map');
+// var spinner = new Spinner(spinner_opts).spin(target);
+// spinner.stop();
 
 L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png', {
 // L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png', {
@@ -65,6 +71,7 @@ map.on('zoomend', function() {
 colors = ['red','blue','green','black','orange'];
 
 var searched_flights = [],displayed_flights=[], selected_flight=[];
+var searched_flightplans =[],displayed_flightplans=[], selected_flightplan=[];
 var selected_flight_index = -1;
 var displayed_flights = [];
 var flights = [];
@@ -89,30 +96,74 @@ map.on('click', function(e) {
 
 
 // init with two flights
-d3.json("json/multi_traj_raw2.json", function(error,data){
+d3.json("json/multi_traj_with_plan_raw.json", function(error,data){
 	if (!error && typeof data !== 'undefined'){
 
 	// me
 	searched_flights = {};
 	searched_flights.features = data.hits.hits;
 	searched_flights.type = "FeatureCollection";
+	searched_flightplans_LA = {};searched_flightplans_LA.features = [];
+	searched_flightplans_PD = {};searched_flightplans_PD.features = [];
+	searched_flightplans_LF = {};searched_flightplans_LF.features = [];
+
 	delete searched_flights._type;
 	delete searched_flights._score;
 	for (i = 0; i < searched_flights.features.length; i++) { 
+		searched_flights.features[i].datatype = "etms";
 	    searched_flights.features[i].type = "Feature";
 	    searched_flights.features[i].geometry = sort_geometry(searched_flights.features[i]);
-	    // console.log(searched_flights.features[i]._source)
 	    // searched_flights.features[i].altitude = searched_flights.features[i]._source.POSITION[0].ALTITUDE;
 	    // searched_flights.features[i].groundspeed = searched_flights.features[i]._source.POSITION[0].GROUNDSPEED;
 	    delete searched_flights.features[i]._source.LOCATION;
 	    delete searched_flights.features[i]._source.POSITION;
 	    // searched_flights.features[i].geometry.type = "LineString"
 	    searched_flights.features[i].properties = searched_flights.features[i]._source.AIR[0];
-	    searched_flights.features[i].metrics = compute_metrics(searched_flights.features[i])
+
+
+	    // plans LA
+	    searched_flightplans_LA.features[i] = searched_flights.features[i]._source.PLAN[0].LA[0];
+		searched_flightplans_LA.features[i].type = "Feature";
+		searched_flightplans_LA.features[i].datatype = "LA";
+		searched_flightplans_LA.features[i].geometry = searched_flights.features[i]._source.PLAN[0].LA[0].FPWAYPT_coord[0];
+		searched_flightplans_LA.features[i].geometry.type = "LineString";
+		searched_flightplans_LA.features[i].properties = searched_flights.features[i].properties;
+		delete searched_flightplans_LA.features[i].FPWAYPT_coord;
+
+		// plans LF
+	    searched_flightplans_LF.features[i] = searched_flights.features[i]._source.PLAN[0].LF[0];
+		searched_flightplans_LF.features[i].type = "Feature";
+		searched_flightplans_LF.features[i].datatype = "LA";
+		searched_flightplans_LF.features[i].geometry = searched_flights.features[i]._source.PLAN[0].LF[0].FPWAYPT_coord[0];
+		searched_flightplans_LF.features[i].geometry.type = "LineString";
+		searched_flightplans_LF.features[i].properties = searched_flights.features[i].properties;
+		delete searched_flightplans_LF.features[i].FPWAYPT_coord;
+
+		// plans PD
+	    searched_flightplans_PD.features[i] = searched_flights.features[i]._source.PLAN[0].PD[0];
+		searched_flightplans_PD.features[i].type = "Feature";
+		searched_flightplans_PD.features[i].datatype = "LA";
+		searched_flightplans_PD.features[i].geometry = searched_flights.features[i]._source.PLAN[0].PD[0].FPWAYPT_coord[0];
+		searched_flightplans_PD.features[i].geometry.type = "LineString";
+		searched_flightplans_PD.features[i].properties = searched_flights.features[i].properties;
+		delete searched_flightplans_PD.features[i].FPWAYPT_coord;
+
+
+		delete searched_flights.features[i]._source;
+
+		// metrics
+		searched_flights.features[i].metrics = compute_metrics(searched_flights.features[i])
 	}
+
+
+
+
 	console.log("start drawing");
-	flights = searched_flights;
-	draw_flights(searched_flights);
+
+	draw_flights(searched_flights,"etms");
+	draw_flights(searched_flightplans_LA,"LA");
+	draw_flights(searched_flightplans_LF,"LF");
+	draw_flights(searched_flightplans_PD,"PD");
 	draw_metrics(searched_flights.features);
 	console.log("done drawing");
 	}
@@ -148,10 +199,18 @@ d3.select("#reduce-button").on("mousedown", function() {
 	}
 });
 
-d3.select("#save").on("click", function(){
-	var html = svg.selectAll("g")
-	    .html();
-	// var html = d3.select("#map").html();
+d3.select("#unselect_button").on("click", function(){
+	selected_flight = [];
+	// hide the info for the selected flight
+	d3.selectAll("#info_selected_flight").style("display","none");
+	selected_flight_index = -1;
+	update_opacity();
+});
+
+d3.select("#save_button").on("click", function(){
+	var html = g.html()+g2.html();
+	// var html = svg.selectAll("g").html();
+	// var html = d3.selectAll("#map").html();
 	html = "<svg width='"+d3.select('#map').style('width')+ "' height='"+d3.select('#map').style('height')+"' version='1.1' xmlns='http://www.w3.org/2000/svg'>"+html+"</svg>";
 
 	console.log(html);
@@ -222,89 +281,62 @@ function update_opacity(nOpacity) {
 	g.selectAll("path")
 		.filter(function(d,i){return i!=selected_flight_index;})
 		.style("stroke-opacity", nOpacity);
+	g2.selectAll("path")
+		.filter(function(d,i){return i!=selected_flight_index;})
+		.style("stroke-opacity", nOpacity);
+	g3.selectAll("path")
+		.filter(function(d,i){return i!=selected_flight_index;})
+		.style("stroke-opacity", nOpacity);
+	g4.selectAll("path")
+		.filter(function(d,i){return i!=selected_flight_index;})
+		.style("stroke-opacity", nOpacity);
 }
 
-function draw_flights(mflights){
+function draw_flights(mflights,datatype){
 	if (mflights !== "undefined" && mflights.features.length>0){
-		spinner.spin(target);
+		// spinner.spin(target);
 		for (i = 0; i < mflights.features.length; i++) { 
 			mflights.features[i].type = "Feature";
 			mflights.features[i].displayed = "True";
 		}
 
-		update_airlines(mflights);
-		update_ori_dest(mflights);
+	    if (datatype=="etms"){
+			myg = g;
+			update_airlines(mflights);
+			update_ori_dest(mflights);
+	    } else if (datatype=="LA"){
+	    	myg = g2;
+	    } else if (datatype=="LF"){
+	    	myg = g3;
+	    } else if (datatype=="PD"){
+	    	myg = g4;
+	    }
 
-		var transform = d3.geo.transform({point: projectPoint}),
-	    path = d3.geo.path().projection(transform);
+	    myg.selectAll("path").remove();
 
-	    g.selectAll("path").remove();
-
-		d3_features = g.selectAll("path")
+		d3_features = myg.selectAll("path")
+			// .classed(datatype,true)
 			.data(mflights.features)
-			.enter().append("path");
+			.enter().append("path")
+			.attr('class', datatype);
 
 		d3_features
 			.on("mouseenter", function(d) {
 				popup_create2(d.properties);reset_popup_timer();
 			})
 			.on("click", function(d,i) {
-				display_flight_info(d,i);
-				update_opacity(0.02);
+				// if (d.datatype=="etms"){
+					display_flight_info(i);
+				// }
 				popup_create2(d.properties);
 				popupTimer = setTimeout(fade_out_popup, 10000);
 			});
 
 
-
-
 		map.on("viewreset", reset);
 
 		reset();
-		spinner.stop();
-
-		// fit the SVG element to leaflet's map layer
-		function reset() {
-
-			bounds = path.bounds(mflights);
-
-			var topLeft = bounds[0],
-				bottomRight = bounds[1];
-
-			svg .attr("width", bottomRight[0] - topLeft[0])
-				.attr("height", bottomRight[1] - topLeft[1])
-				.style("left", topLeft[0] + "px")
-				.style("top", topLeft[1] + "px");
-
-			g .attr("transform", "translate(" + -topLeft[0] + "," 
-			                                  + -topLeft[1] + ")");
-
-			if (opacity_val==1.0){
-				opacity_val = d3.max([0.10,10*0.99/d3_features[0].length]);
-			}
-			// initialize the path data	
-			d3_features.attr("d", path)
-				.style("fill-opacity", 0.0)
-				.style("stroke", function(d){
-					return colors[selected_ARL.indexOf(d.properties.ARL_COD)%colors.length];
-				})
-				.style("stroke-opacity", opacity_val)
-				.attr('fill','blue');
-
-			// make selected flight more opaque
-			if (selected_flight_index!=-1){
-				d3.selectAll('path')
-					.filter(function(o,j){
-						return j==selected_flight_index;
-					})
-					.style("stroke-opacity", 1.0)
-			}	
-			// adjust the text on the range slider
-			d3.select("#nOpacity_text").text(opacity_val.toFixed(3));
-			d3.select("#nOpacity_value").property("value", opacity_val*1000);
-		} 
-	} else {
-		alert("No flights for the corresponding query");
+		// spinner.stop(); 
 	}
 	set_query_status(0);
 	displayed_flights = searched_flights.features//g.selectAll("path")
@@ -315,6 +347,72 @@ function draw_flights(mflights){
 	// hide the info for the selected flight
 	d3.selectAll("#info_selected_flight").style("display","none");
 	selected_flight_index = -1;
+}
+
+// fit the SVG element to leaflet's map layer
+function reset() {
+		var transform = d3.geo.transform({point: projectPoint}),
+	    path = d3.geo.path().projection(transform);
+	// if (datatype=="etms"){
+		bounds = path.bounds(searched_flights);
+
+		var topLeft = bounds[0],
+			bottomRight = bounds[1];
+		// var topLeft = [0,0],
+			// bottomRight = [width, height];
+
+		svg .attr("width", bottomRight[0] - topLeft[0])
+			.attr("height", bottomRight[1] - topLeft[1])
+			.style("left", topLeft[0] + "px")
+			.style("top", topLeft[1] + "px");
+
+		g .attr("transform", "translate(" + -topLeft[0] + "," 
+		                                  + -topLeft[1] + ")");
+		g2 .attr("transform", "translate(" + -topLeft[0] + "," 
+		                                  + -topLeft[1] + ")");
+		g3 .attr("transform", "translate(" + -topLeft[0] + "," 
+		                                  + -topLeft[1] + ")");
+		g4 .attr("transform", "translate(" + -topLeft[0] + "," 
+		                                  + -topLeft[1] + ")");
+	// }
+
+	if (opacity_val==1.0){
+		opacity_val = d3.max([0.10,10*0.99/g.selectAll("path")[0].length]);
+	}
+	// initialize the path data	
+	g.selectAll("path").attr("d", path)
+		.style("fill-opacity", 0.0)
+		.style("stroke", "blue")
+		.style("stroke-opacity", opacity_val)
+		.attr('fill','blue');
+
+	g2.selectAll("path").attr("d", path)
+		.style("fill-opacity", 0.0)
+		.style("stroke", "red")
+		.style("stroke-opacity", opacity_val)
+		.attr('fill','blue');
+	g3.selectAll("path").attr("d", path)
+		.style("fill-opacity", 0.0)
+		.style("stroke", "orange")
+		.style("stroke-opacity", opacity_val)
+		.attr('fill','blue');
+	g4.selectAll("path").attr("d", path)
+		.style("fill-opacity", 0.0)
+		.style("stroke", "green")
+		.style("stroke-opacity", opacity_val)
+		.attr('fill','blue');
+
+	// make selected flight more opaque
+	if (selected_flight_index!=-1){
+		d3.selectAll('path')
+			.filter(function(o,j){
+				return j==selected_flight_index;
+			})
+			.style("stroke-opacity", 1.0)
+	}	
+	// adjust the text on the range slider
+	d3.select("#nOpacity_text").text(opacity_val.toFixed(3));
+	d3.select("#nOpacity_value").property("value", opacity_val*1000);
 }
 
 
@@ -338,13 +436,14 @@ function deg2rad(deg) {
 }
 //////////////////////////////////
 
-function display_flight_info(d,i){
-	selected_flight = d;
+function display_flight_info(i){
 	selected_flight_index = i;
+	d = searched_flights.features[selected_flight_index];
+	selected_flight = d;
 
 	info = d3.selectAll("#info_selected_flight");
 
-	info.select("#sel_flight_ori_dest").text(d.properties.DEPT_APRT + " -> " + d.properties.ARR_APRT);
+	info.select("#sel_flight_ori_dest").text(d.properties.DEP_APRT + " -> " + d.properties.ARR_APRT);
 	info.select("#sel_flight_ARL_and_num").text(d.properties.ARL_COD + d.properties.FLI_NUM);
 	info.select("#sel_flight_date").text("Date: "+d.properties.ORIG_DATE);
 	info.select("#sel_flight_tail").text("Tail: "+d.properties.BEACON_CODE);
@@ -352,21 +451,23 @@ function display_flight_info(d,i){
 	info.select("#sel_flight_time_ori_exp").text("Departure time (exp): "+"xxxx");
 	info.select("#sel_flight_time_ori_act").text("Departure time (act): "+d.properties.ORIG_TIME);	
 	info.select("#sel_flight_time_dest_exp").text("Arrival time (exp): "+d.properties.ARR_EST_TIME);
-	info.select("#sel_flight_time_dest_act").text("Arrival time (act): "+timeformat(d3.max(d.geometry.times)));	
+	// info.select("#sel_flight_time_dest_act").text("Arrival time (act): "+timeformat(d3.max(d.geometry.times)));	
 	info.select("#sel_flight_speed").text("Speed: ")
 	info.select("#sel_flight_fuel").text("Fuel: ")
 	info.select("#sel_flight_passengers_num").text("#Passengers: ")
 	info.select("#sel_flight_passengers_corres").text("#Correspondances: ")
 
-	d3.selectAll('path')
-		.filter(function(o,j){
-			return j==i;
-		})
-		.style("stroke-opacity", 1);
+	g.selectAll('path').filter(function(o,j){return j==i;}).style("stroke-opacity", 1);
+	g2.selectAll('path').filter(function(o,j){return j==i;}).style("stroke-opacity", 1);
+	g3.selectAll('path').filter(function(o,j){return j==i;}).style("stroke-opacity", 1);
+	g4.selectAll('path').filter(function(o,j){return j==i;}).style("stroke-opacity", 1);
+
 	plot_altitude(d);
 	plot_groundspeed(d);
 	info.style("display",null);
 	compute_metrics(d)
+
+	update_opacity(0.02);
 }
 	
 function compute_metrics(d){
@@ -398,8 +499,14 @@ function compute_metrics(d){
 			pt100arr=d.geometry.coordinates[i100arr];}
 		// Compute the achieved distance (last point-first point)
 		achieved_dist40to40=getDistanceFromLatLonInNm(pt40dep[0],pt40dep[1],pt40arr[0],pt40arr[1]);
+		achieved_dist40to40=achieved_dist40to40+getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],d.geometry.coordinates[i40dep][0],d.geometry.coordinates[i40dep][1])+getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],d.geometry.coordinates[i40arr][0],d.geometry.coordinates[i40arr][1])-80;
+
 		achieved_dist40to100=getDistanceFromLatLonInNm(pt40dep[0],pt40dep[1],pt100arr[0],pt100arr[1]);
+		achieved_dist40to100=achieved_dist40to100+getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],d.geometry.coordinates[i40dep][0],d.geometry.coordinates[i40dep][1])+getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],d.geometry.coordinates[i100arr][0],d.geometry.coordinates[i100arr][1])-140;
+
 		achieved_dist100to100=getDistanceFromLatLonInNm(pt100dep[0],pt100dep[1],pt100arr[0],pt100arr[1]);
+		achieved_dist100to100=achieved_dist100to100+getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],d.geometry.coordinates[i100dep][0],d.geometry.coordinates[i100dep][1])+getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],d.geometry.coordinates[i100arr][0],d.geometry.coordinates[i100arr][1])-200;
+
 		// Compute the flight time for each
 		travel_time_40to40=(d.geometry.times[i40arr]-d.geometry.times[i40dep])/60000;// in minutes
 		travel_time_40to100=(d.geometry.times[i100arr]-d.geometry.times[i40dep])/60000;
@@ -490,9 +597,9 @@ function compute_metrics(d){
         
 function set_query_status(drawing){
 	if (drawing){
-	    spinner.spin(target);
+	    // spinner.spin(target);
 	} else {
-	    spinner.stop();
+	    // spinner.stop();
 	}
 }
 
@@ -542,7 +649,7 @@ function refresh_info_panel() {
 // "FID": "20140305148298",
 // "DEP_FIX_TIME": "05-MAR-14",
 // "ARR_ESTIMATE": "05-MAR-14",
-// "DEPT_APRT": "MIA",
+// "DEP_APRT": "MIA",
 // "ACT_DATE": "05-MAR-14"
 
 function popup_create(d){
@@ -558,7 +665,7 @@ function popup_create(d){
 }
 
 function popup_create2(d){
-	var titleHtml = d.DEPT_APRT + " -> " + d.ARR_APRT + "</br>";
+	var titleHtml = d.DEP_APRT + " -> " + d.ARR_APRT + "</br>";
 	titleHtml += d.ARL_COD + d.FLI_NUM + "</br>";
 
 	var contentHtml = "";
@@ -656,14 +763,44 @@ function update_airlines(mflights){
 			if (selected_ARL.indexOf(d.name)>-1){
 				g.selectAll("path")
 					.filter(function(i){return i.properties.ARL_COD===d.name})
-					.filter(function(i){return selected_OD.indexOf(i.properties.DEPT_APRT+'-'+i.properties.ARR_APRT)>-1})
+					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+					.each(function(d){d.displayed="False"})
+					.style("display", "none");
+				g2.selectAll("path")
+					.filter(function(i){return i.properties.ARL_COD===d.name})
+					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+					.each(function(d){d.displayed="False"})
+					.style("display", "none");
+				g3.selectAll("path")
+					.filter(function(i){return i.properties.ARL_COD===d.name})
+					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+					.each(function(d){d.displayed="False"})
+					.style("display", "none");
+				g4.selectAll("path")
+					.filter(function(i){return i.properties.ARL_COD===d.name})
+					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
 				selected_ARL.splice(selected_ARL.indexOf(d.name),1);
 			} else {
 				g.selectAll("path")
 					.filter(function(i){return i.properties.ARL_COD===d.name})
-					.filter(function(i){return selected_OD.indexOf(i.properties.DEPT_APRT+'-'+i.properties.ARR_APRT)>-1})
+					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+					.each(function(d){d.displayed="True"})
+					.style("display", null);
+				g2.selectAll("path")
+					.filter(function(i){return i.properties.ARL_COD===d.name})
+					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+					.each(function(d){d.displayed="True"})
+					.style("display", null);
+				g3.selectAll("path")
+					.filter(function(i){return i.properties.ARL_COD===d.name})
+					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+					.each(function(d){d.displayed="True"})
+					.style("display", null);
+				g4.selectAll("path")
+					.filter(function(i){return i.properties.ARL_COD===d.name})
+					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
 				selected_ARL.push(d.name)
@@ -688,13 +825,13 @@ function update_ori_dest(mflights){
 	list.selectAll("input").remove();
 
 	for (i = 0; i < mflights.features.length; i++) { 
-		ori_dest_i = mflights.features[i].properties.DEPT_APRT+'-'+mflights.features[i].properties.ARR_APRT;
-			if (ori_dest_list.hasOwnProperty(ori_dest_i)) {
-				ori_dest_list[ori_dest_i] = ori_dest_list[ori_dest_i]+1;
-			}else {
-				ori_dest_list[ori_dest_i] = 1;
-			}
+		ori_dest_i = mflights.features[i].properties.DEP_APRT+'-'+mflights.features[i].properties.ARR_APRT;
+		if (ori_dest_list.hasOwnProperty(ori_dest_i)) {
+			ori_dest_list[ori_dest_i] = ori_dest_list[ori_dest_i]+1;
+		}else {
+			ori_dest_list[ori_dest_i] = 1;
 		}
+	}
 
 	for (var key in ori_dest_list) {
 	    ori_dest.push({"name":key,"num":ori_dest_list[key]});
@@ -714,14 +851,44 @@ function update_ori_dest(mflights){
 			// console.log(d.name)
 			if (selected_OD.indexOf(d.name)>-1){
 				g.selectAll("path")
-					.filter(function(i){return (i.properties.DEPT_APRT+'-'+i.properties.ARR_APRT)===d.name})
+					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
+					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+					.each(function(d){d.displayed="False"})
+					.style("display", "none");
+				g2.selectAll("path")
+					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
+					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+					.each(function(d){d.displayed="False"})
+					.style("display", "none");
+				g3.selectAll("path")
+					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
+					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+					.each(function(d){d.displayed="False"})
+					.style("display", "none");
+				g4.selectAll("path")
+					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
 				selected_OD.splice(selected_OD.indexOf(d.name),1);
 			} else {
 				g.selectAll("path")
-					.filter(function(i){return (i.properties.DEPT_APRT+'-'+i.properties.ARR_APRT)===d.name})
+					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
+					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+					.each(function(d){d.displayed="True"})
+					.style("display", null);
+				g2.selectAll("path")
+					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
+					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+					.each(function(d){d.displayed="True"})
+					.style("display", null);
+				g3.selectAll("path")
+					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
+					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+					.each(function(d){d.displayed="True"})
+					.style("display", null);
+				g4.selectAll("path")
+					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
@@ -745,6 +912,18 @@ function checkAll_OD(){
     	.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
+	g2.selectAll("path")
+    	.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+		.each(function(d){d.displayed="True"})
+		.style("display", null);
+	g3.selectAll("path")
+    	.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+		.each(function(d){d.displayed="True"})
+		.style("display", null);
+	g4.selectAll("path")
+    	.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
+		.each(function(d){d.displayed="True"})
+		.style("display", null);
 	d3.select("#ori-dest-list").selectAll('input')
 		.property('checked',true);
 	for (var key in ori_dest_list) {
@@ -763,6 +942,15 @@ function uncheckAll_OD(){
     g.selectAll("path")
     	.each(function(d){d.displayed="False"})
 		.style("display", "none");
+	g2.selectAll("path")
+    	.each(function(d){d.displayed="False"})
+		.style("display", "none");
+	g3.selectAll("path")
+    	.each(function(d){d.displayed="False"})
+		.style("display", "none");
+	g4.selectAll("path")
+    	.each(function(d){d.displayed="False"})
+		.style("display", "none");
 	d3.select("#ori-dest-list").selectAll('input')
 		.property('checked',false);
     selected_OD = [];
@@ -778,7 +966,19 @@ function checkAll_ARL(){
     d3.select("#airlines-list-list").selectAll('label').selectAll('input')
     	.property('checked',true);
     g.selectAll("path")
-    	.filter(function(i){return selected_OD.indexOf(i.properties.DEPT_APRT+'-'+i.properties.ARR_APRT)>-1})
+    	.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+		.each(function(d){d.displayed="True"})
+		.style("display", null);
+	g2.selectAll("path")
+    	.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+		.each(function(d){d.displayed="True"})
+		.style("display", null);
+	g3.selectAll("path")
+    	.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
+		.each(function(d){d.displayed="True"})
+		.style("display", null);
+	g4.selectAll("path")
+    	.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
 	d3.select("#airlines-list").selectAll('input')
@@ -798,6 +998,15 @@ function checkAll_ARL(){
 function uncheckAll_ARL(){
     d3.select("#airlines-list").selectAll('label').selectAll('input').property('checked',false);
     g.selectAll("path")
+	    .each(function(d){d.displayed="False"})
+		.style("display", "none");
+	g2.selectAll("path")
+	    .each(function(d){d.displayed="False"})
+		.style("display", "none");
+	g3.selectAll("path")
+	    .each(function(d){d.displayed="False"})
+		.style("display", "none");
+	g4.selectAll("path")
 	    .each(function(d){d.displayed="False"})
 		.style("display", "none");
 	d3.select("#airlines-list").selectAll('input')
