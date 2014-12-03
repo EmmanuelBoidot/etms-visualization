@@ -208,36 +208,78 @@ d3.select("#unselect_button").on("click", function(){
 });
 
 d3.select("#save_button").on("click", function(){
-	var html = g.html()+g2.html();
-	// var html = svg.selectAll("g").html();
-	// var html = d3.selectAll("#map").html();
+	export_map();
+});
+
+function makeSVG(parent, tag, attrs) {
+    var el= document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (var k in attrs){
+        if(k=="xlink:href"){
+            el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', attrs[k]);
+        }else{
+            el.setAttribute(k, attrs[k]);
+        }
+    }
+}
+
+function export_map(){
+	var html = g.html()+g2.html()+g3.html()+g4.html();//+ d3.selectAll(".leaflet-tile-pane")[0][0].innerHTML;
+	var svgimg = document.createElementNS('http://www.w3.org/2000/svg','image');
+	var tiles = d3.selectAll(".leaflet-tile")[0];
+
+	tiles.forEach(function(d){
+		// console.log(d);
+		svgimg.setAttributeNS(null,'height',d.height+'px');
+		svgimg.setAttributeNS(null,'width',d.width+'px');
+		svgimg.setAttributeNS('http://www.w3.org/1999/xlink','href',d.src);
+		svgimg.setAttributeNS(null,'x',d.style.left);
+		svgimg.setAttributeNS(null,'y',d.style.top);
+		html = svgimg.outerHTML+html;
+	})
+
 	html = "<svg width='"+d3.select('#map').style('width')+ "' height='"+d3.select('#map').style('height')+"' version='1.1' xmlns='http://www.w3.org/2000/svg'>"+html+"</svg>";
 
-	console.log(html);
+	// console.log(html);
 	var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
-	var img = '<img src="'+imgsrc+'">'; 
-	d3.select("#svgdataurl").html(img);
+	// var img = '<img src="'+imgsrc+'">';
 
+	// d3.select("#svgdataurl")
+ //        .html("Right-click on this preview and choose Save as<br />Left-Click to dismiss<br />")
+ //        .append("img")
+ //        .attr("src", imgsrc);
 
-	var canvas = document.querySelector("canvas"),
-	  context = canvas.getContext("2d");
-
-	var image = new Image;
-	image.src = imgsrc;
-	image.onload = function() {
-	  context.drawImage(image, 0, 0);
-
-	  var canvasdata = canvas.toDataURL("image/png");
-
-	  var pngimg = '<img src="'+canvasdata+'">'; 
-		  d3.select("#pngdataurl").html(pngimg);
-
-	  var a = document.createElement("a");
-	  a.download = "map.png";
-	  a.href = canvasdata;
+    var a = document.createElement("a");
+	  a.download = "map.svg";
+	  a.href = imgsrc;
 	  a.click();
-	};
-});
+
+	// var a = document.createElement("a");
+	// 	  a.download = "map.svg";
+	// 	  a.href = img;
+	// 	  a.click();
+
+	// d3.select("#svgdataurl").html(img);
+
+
+	// var canvas = document.querySelector("canvas"),
+	//   context = canvas.getContext("2d");
+
+	// var image = new Image;
+	// image.src = imgsrc;
+	// image.onload = function() {
+	//   context.drawImage(image, 0, 0);
+
+	//   var canvasdata = canvas.toDataURL("image/pdf");
+
+	//   var pngimg = '<img src="'+canvasdata+'">'; 
+	// 	  d3.select("#pngdataurl").html(pngimg);
+
+	//   var a = document.createElement("a");
+	//   a.download = "map.pdf";
+	//   a.href = canvasdata;
+	//   a.click();
+	// };
+}
 
 function sort_geometry(mflight){
 	coord = mflight._source.LOCATION[0].coordinates;
@@ -404,11 +446,12 @@ function reset() {
 
 	// make selected flight more opaque
 	if (selected_flight_index!=-1){
-		d3.selectAll('path')
-			.filter(function(o,j){
-				return j==selected_flight_index;
-			})
-			.style("stroke-opacity", 1.0)
+		// d3.selectAll('path')
+		// 	.filter(function(o,j){
+		// 		return j==selected_flight_index;
+		// 	})
+		// 	.style("stroke-opacity", 1.0)
+		display_flight_info(selected_flight_index);
 	}	
 	// adjust the text on the range slider
 	d3.select("#nOpacity_text").text(opacity_val.toFixed(3));
