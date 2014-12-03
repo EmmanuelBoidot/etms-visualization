@@ -98,80 +98,13 @@ map.on('click', function(e) {
 // init with two flights
 d3.json("json/multi_traj_with_plan_raw.json", function(error,data){
 	if (!error && typeof data !== 'undefined'){
-
-	// me
-	searched_flights = {};
-	searched_flights.features = data.hits.hits;
-	searched_flights.type = "FeatureCollection";
-	searched_flightplans_LA = {};searched_flightplans_LA.features = [];
-	searched_flightplans_PD = {};searched_flightplans_PD.features = [];
-	searched_flightplans_LF = {};searched_flightplans_LF.features = [];
-
-	delete searched_flights._type;
-	delete searched_flights._score;
-	for (i = 0; i < searched_flights.features.length; i++) { 
-		searched_flights.features[i].datatype = "etms";
-	    searched_flights.features[i].type = "Feature";
-	    searched_flights.features[i].geometry = sort_geometry(searched_flights.features[i]);
-	    // searched_flights.features[i].altitude = searched_flights.features[i]._source.POSITION[0].ALTITUDE;
-	    // searched_flights.features[i].groundspeed = searched_flights.features[i]._source.POSITION[0].GROUNDSPEED;
-	    delete searched_flights.features[i]._source.LOCATION;
-	    delete searched_flights.features[i]._source.POSITION;
-	    // searched_flights.features[i].geometry.type = "LineString"
-	    searched_flights.features[i].properties = searched_flights.features[i]._source.AIR[0];
-
-
-	    // plans LA
-	    searched_flightplans_LA.features[i] = searched_flights.features[i]._source.PLAN[0].LA[0];
-		searched_flightplans_LA.features[i].type = "Feature";
-		searched_flightplans_LA.features[i].datatype = "LA";
-		searched_flightplans_LA.features[i].geometry = searched_flights.features[i]._source.PLAN[0].LA[0].FPWAYPT_coord[0];
-		searched_flightplans_LA.features[i].geometry.type = "LineString";
-		searched_flightplans_LA.features[i].properties = searched_flights.features[i].properties;
-		delete searched_flightplans_LA.features[i].FPWAYPT_coord;
-
-		// plans LF
-	    searched_flightplans_LF.features[i] = searched_flights.features[i]._source.PLAN[0].LF[0];
-		searched_flightplans_LF.features[i].type = "Feature";
-		searched_flightplans_LF.features[i].datatype = "LA";
-		searched_flightplans_LF.features[i].geometry = searched_flights.features[i]._source.PLAN[0].LF[0].FPWAYPT_coord[0];
-		searched_flightplans_LF.features[i].geometry.type = "LineString";
-		searched_flightplans_LF.features[i].properties = searched_flights.features[i].properties;
-		delete searched_flightplans_LF.features[i].FPWAYPT_coord;
-
-		// plans PD
-	    searched_flightplans_PD.features[i] = searched_flights.features[i]._source.PLAN[0].PD[0];
-		searched_flightplans_PD.features[i].type = "Feature";
-		searched_flightplans_PD.features[i].datatype = "LA";
-		searched_flightplans_PD.features[i].geometry = searched_flights.features[i]._source.PLAN[0].PD[0].FPWAYPT_coord[0];
-		searched_flightplans_PD.features[i].geometry.type = "LineString";
-		searched_flightplans_PD.features[i].properties = searched_flights.features[i].properties;
-		delete searched_flightplans_PD.features[i].FPWAYPT_coord;
-
-
-		delete searched_flights.features[i]._source;
-
-		// metrics
-		searched_flights.features[i].metrics = compute_metrics(searched_flights.features[i])
-	}
-
-
-
-
-	console.log("start drawing");
-
-	draw_flights(searched_flights,"etms");
-	draw_flights(searched_flightplans_LA,"LA");
-	draw_flights(searched_flightplans_LF,"LF");
-	draw_flights(searched_flightplans_PD,"PD");
-	draw_metrics(searched_flights.features);
-	console.log("done drawing");
+		extract_raw_data(data);
 	}
 });
 
 // when the input range changes update the opacity 
 d3.select("#nOpacity_value").on("input", function() {
-	update_opacity(+this.value);
+	update_opacity(+this.value/1000);
 });
 d3.select("#plus-button").on("mousedown", function() {
 	val = d3.select("#nOpacity_value").property("value");
@@ -179,7 +112,7 @@ d3.select("#plus-button").on("mousedown", function() {
 	update_opacity(val);
 });
 d3.select("#minus-button").on("mousedown", function() {
-	val = d3.select("#nOpacity_value").property("value")/1;
+	val = d3.select("#nOpacity_value").property("value");
 	val = val/1000-.01 // corresponds to .01 decrease
 	update_opacity(val);
 });
@@ -312,7 +245,7 @@ function update_opacity(nOpacity) {
 		nOpacity = d3.max([0.10,9*0.999/displayed_flights.length]);
 	}
 	if (nOpacity>1){
-		nOpacity = nOpacity/1000;
+		nOpacity = 1;
 	}
 	// adjust the text on the range slider
 	d3.select("#nOpacity_text").text(nOpacity.toFixed(3));
@@ -510,7 +443,7 @@ function display_flight_info(i){
 	info.style("display",null);
 	compute_metrics(d)
 
-	update_opacity(0.02);
+	update_opacity(0.05);
 }
 	
 function compute_metrics(d){
@@ -1078,4 +1011,77 @@ function uncheckAll_ARL(){
         }
     }
 });
+ }
+
+ function extract_raw_data(obj){
+	if (obj.hits.hits.length>0){
+		selected_flight_index = -1;
+		selected_flight = {};
+		searched_flights = {};
+		searched_flightplans_LA = {};searched_flightplans_LA.features = [];searched_flightplans_LA.type= "FeatureCollection";
+		searched_flightplans_PD = {};searched_flightplans_PD.features = [];searched_flightplans_PD.type= "FeatureCollection";
+		searched_flightplans_LF = {};searched_flightplans_LF.features = [];searched_flightplans_LF.type= "FeatureCollection";
+
+		searched_flights.features = obj.hits.hits;
+		searched_flights.type = "FeatureCollection";
+		delete searched_flights._type;
+		delete searched_flights._score;
+		for (i = 0; i < searched_flights.features.length; i++) { 
+			searched_flights.features[i].datatype = "etms";
+		    searched_flights.features[i].type = "Feature";
+		    searched_flights.features[i].geometry = sort_geometry(searched_flights.features[i]);
+		    // searched_flights.features[i].altitude = searched_flights.features[i]._source.POSITION[0].ALTITUDE;
+		    // searched_flights.features[i].groundspeed = searched_flights.features[i]._source.POSITION[0].GROUNDSPEED;
+		    delete searched_flights.features[i]._source.LOCATION;
+		    delete searched_flights.features[i]._source.POSITION;
+		    // searched_flights.features[i].geometry.type = "LineString"
+		    searched_flights.features[i].properties = searched_flights.features[i]._source.AIR[0];
+
+
+		    // plans LA
+		    searched_flightplans_LA.features[i] = searched_flights.features[i]._source.PLAN[0].LA[0];
+			searched_flightplans_LA.features[i].type = "Feature";
+			searched_flightplans_LA.features[i].datatype = "LA";
+			searched_flightplans_LA.features[i].geometry = searched_flights.features[i]._source.PLAN[0].LA[0].FPWAYPT_coord[0];
+			searched_flightplans_LA.features[i].geometry.type = "LineString";
+			searched_flightplans_LA.features[i].properties = searched_flights.features[i].properties;
+			delete searched_flightplans_LA.features[i].FPWAYPT_coord;
+
+			// plans LF
+		    searched_flightplans_LF.features[i] = searched_flights.features[i]._source.PLAN[0].LF[0];
+			searched_flightplans_LF.features[i].type = "Feature";
+			searched_flightplans_LF.features[i].datatype = "LA";
+			searched_flightplans_LF.features[i].geometry = searched_flights.features[i]._source.PLAN[0].LF[0].FPWAYPT_coord[0];
+			searched_flightplans_LF.features[i].geometry.type = "LineString";
+			searched_flightplans_LF.features[i].properties = searched_flights.features[i].properties;
+			delete searched_flightplans_LF.features[i].FPWAYPT_coord;
+
+			// plans PD
+		    searched_flightplans_PD.features[i] = searched_flights.features[i]._source.PLAN[0].PD[0];
+			searched_flightplans_PD.features[i].type = "Feature";
+			searched_flightplans_PD.features[i].datatype = "LA";
+			searched_flightplans_PD.features[i].geometry = searched_flights.features[i]._source.PLAN[0].PD[0].FPWAYPT_coord[0];
+			searched_flightplans_PD.features[i].geometry.type = "LineString";
+			searched_flightplans_PD.features[i].properties = searched_flights.features[i].properties;
+			delete searched_flightplans_PD.features[i].FPWAYPT_coord;
+
+
+			delete searched_flights.features[i]._source;
+
+			// metrics
+			searched_flights.features[i].metrics = compute_metrics(searched_flights.features[i])
+		}
+
+	console.log("start drawing");
+
+	draw_flights(searched_flights,"etms");
+	draw_flights(searched_flightplans_LA,"LA");
+	draw_flights(searched_flightplans_LF,"LF");
+	draw_flights(searched_flightplans_PD,"PD");
+	draw_metrics(searched_flights.features);
+	update_opacity()
+	console.log("done drawing");
+	} else {
+		alert("No flights for the corresponding query");
+	}
  }
