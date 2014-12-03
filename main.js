@@ -108,13 +108,17 @@ d3.select("#nOpacity_value").on("input", function() {
 });
 d3.select("#plus-button").on("mousedown", function() {
 	val = d3.select("#nOpacity_value").property("value");
-	val = val/1000+.01 // corresponds to .01 increase
-	update_opacity(val);
+	if (val<=1000){
+		val = val/1000+.01 // corresponds to .01 increase
+		update_opacity(val);
+	}
 });
 d3.select("#minus-button").on("mousedown", function() {
 	val = d3.select("#nOpacity_value").property("value");
-	val = val/1000-.01 // corresponds to .01 decrease
-	update_opacity(val);
+	if (val>10) {
+		val = val/1000-.01 // corresponds to .01 decrease
+		update_opacity(val);
+	}
 });
 
 d3.select("#reduce-button").on("mousedown", function() {
