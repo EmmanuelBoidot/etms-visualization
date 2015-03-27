@@ -6,7 +6,7 @@ var map = L.map('map').setView([33.85, -84.8],4);
 var svg = d3.select(map.getPanes().overlayPane).append("svg");
 var g2 = svg.append("g").attr("class", "leaflet-zoom-hide");
 var g3 = svg.append("g").attr("class", "leaflet-zoom-hide");
-var g = svg.append("g").attr("class", "leaflet-zoom-hide");
+var g = svg.append("g").attr("class", "leaflet-zoom-hide").attr("id","initial_g");
 var g4 = svg.append("g").attr("class", "leaflet-zoom-hide");
 var popupTimer = null;
 // var spinner_opts = {
@@ -145,7 +145,10 @@ d3.select("#unselect_button").on("click", function(){
 });
 
 d3.select("#save_button").on("click", function(){
-	export_map();
+	if (/Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor))
+		export_map_safari();
+	else
+		export_map_chrome();
 });
 
 function makeSVG(parent, tag, attrs) {
@@ -159,8 +162,44 @@ function makeSVG(parent, tag, attrs) {
     }
 }
 
-function export_map(){
-	var html = g.html()+g2.html()+g3.html()+g4.html();//+ d3.selectAll(".leaflet-tile-pane")[0][0].innerHTML;
+function export_map_safari(){
+	// var html = g.html()+g2.html()+g3.html()+g4.html();//+ d3.selectAll(".leaflet-tile-pane")[0][0].innerHTML;
+	// if (typeof(html)=="undefined" || html==NaN){
+		s = new XMLSerializer()
+		html = s.serializeToString(g.node());
+		html += s.serializeToString(g2.node());
+		html += s.serializeToString(g3.node());
+		html += s.serializeToString(g4.node());
+	// }
+	var svgimg = document.createElementNS('http://www.w3.org/2000/svg','image');
+	var tiles = d3.selectAll(".leaflet-tile")[0];
+
+	tiles.forEach(function(d){
+		// console.log(d);
+		svgimg.setAttributeNS(null,'height',d.height+'px');
+		svgimg.setAttributeNS(null,'width',d.width+'px');
+		svgimg.setAttributeNS('http://www.w3.org/1999/xlink','href',d.src);
+		// svgimg.setAttributeNS(null,'x',d.style.left);
+		// svgimg.setAttributeNS(null,'y',d.style.top);
+		matrix = new WebKitCSSMatrix(d.style.webkitTransform);
+		svgimg.setAttributeNS(null,'x',matrix.m41-parseInt(svg.node().style.left.slice(0,-2)));
+		svgimg.setAttributeNS(null,'y',matrix.m42-parseInt(svg.node().style.top.slice(0,-2)));
+		html = s.serializeToString(svgimg)+html;
+	})
+
+	html = "<svg width='"+d3.select('#map').style('width')+ "' height='"+d3.select('#map').style('height')+"' version='1.1' xmlns='http://www.w3.org/2000/svg'>"+html+"</svg>";
+
+	// console.log(html);
+	var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+
+    var a = document.createElement("a");
+	  a.download = "map.svg";
+	  a.href = imgsrc;
+	  a.click();
+}
+
+function export_map_chrome(){
+	var html = g.html()+g2.html()+g3.html()+g4.html();
 	var svgimg = document.createElementNS('http://www.w3.org/2000/svg','image');
 	var tiles = d3.selectAll(".leaflet-tile")[0];
 
@@ -178,44 +217,11 @@ function export_map(){
 
 	// console.log(html);
 	var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
-	// var img = '<img src="'+imgsrc+'">';
-
-	// d3.select("#svgdataurl")
- //        .html("Right-click on this preview and choose Save as<br />Left-Click to dismiss<br />")
- //        .append("img")
- //        .attr("src", imgsrc);
 
     var a = document.createElement("a");
 	  a.download = "map.svg";
 	  a.href = imgsrc;
 	  a.click();
-
-	// var a = document.createElement("a");
-	// 	  a.download = "map.svg";
-	// 	  a.href = img;
-	// 	  a.click();
-
-	// d3.select("#svgdataurl").html(img);
-
-
-	// var canvas = document.querySelector("canvas"),
-	//   context = canvas.getContext("2d");
-
-	// var image = new Image;
-	// image.src = imgsrc;
-	// image.onload = function() {
-	//   context.drawImage(image, 0, 0);
-
-	//   var canvasdata = canvas.toDataURL("image/pdf");
-
-	//   var pngimg = '<img src="'+canvasdata+'">'; 
-	// 	  d3.select("#pngdataurl").html(pngimg);
-
-	//   var a = document.createElement("a");
-	//   a.download = "map.pdf";
-	//   a.href = canvasdata;
-	//   a.click();
-	// };
 }
 
 function sort_geometry(mflight){
@@ -245,7 +251,7 @@ function sort_geometry(mflight){
 // update the elements
 function update_opacity(nOpacity) {
 	if (!nOpacity){
-		// visiblePaths = g.selectAll("path").filter(function(d){return d.displayed=='True'})[0];
+		// visiblePaths = g.selectAll('path').filter(function(d){return d.displayed=='True'})[0];
 		nOpacity = d3.max([0.10,9*0.999/displayed_flights.length]);
 	}
 	if (nOpacity>1){
@@ -257,16 +263,16 @@ function update_opacity(nOpacity) {
 	opacity_val = nOpacity;
 
 	// update the paths opacity
-	g.selectAll("path")
+	g.selectAll('path')
 		.filter(function(d,i){return i!=selected_flight_index;})
 		.style("stroke-opacity", nOpacity);
-	g2.selectAll("path")
+	g2.selectAll('path')
 		.filter(function(d,i){return i!=selected_flight_index;})
 		.style("stroke-opacity", nOpacity);
-	g3.selectAll("path")
+	g3.selectAll('path')
 		.filter(function(d,i){return i!=selected_flight_index;})
 		.style("stroke-opacity", nOpacity);
-	g4.selectAll("path")
+	g4.selectAll('path')
 		.filter(function(d,i){return i!=selected_flight_index;})
 		.style("stroke-opacity", nOpacity);
 }
@@ -291,12 +297,12 @@ function draw_flights(mflights,datatype){
 	    	myg = g4;
 	    }
 
-	    myg.selectAll("path").remove();
+	    myg.selectAll('path').remove();
 
-		d3_features = myg.selectAll("path")
+		d3_features = myg.selectAll('path')
 			// .classed(datatype,true)
 			.data(mflights.features)
-			.enter().append("path")
+			.enter().append('path')
 			.attr('class', datatype);
 
 		d3_features
@@ -318,7 +324,7 @@ function draw_flights(mflights,datatype){
 		// spinner.stop(); 
 	}
 	set_query_status(0);
-	displayed_flights = searched_flights.features//g.selectAll("path")
+	displayed_flights = searched_flights.features//g.selectAll('path')
 		.filter(function(d){return d.displayed=="True"});
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 	d3.select("#info_flights_ARL").text("#Airlines: "+selected_ARL.length);
@@ -356,26 +362,26 @@ function reset() {
 	// }
 
 	if (opacity_val==1.0){
-		opacity_val = d3.max([0.10,10*0.99/g.selectAll("path")[0].length]);
+		opacity_val = d3.max([0.10,10*0.99/g.selectAll('path')[0].length]);
 	}
 	// initialize the path data	
-	g.selectAll("path").attr("d", path)
+	g.selectAll('path').attr("d", path)
 		.style("fill-opacity", 0.0)
 		.style("stroke", "blue")
 		.style("stroke-opacity", opacity_val)
 		.attr('fill','blue');
 
-	g2.selectAll("path").attr("d", path)
+	g2.selectAll('path').attr("d", path)
 		.style("fill-opacity", 0.0)
 		.style("stroke", "red")
 		.style("stroke-opacity", opacity_val)
 		.attr('fill','blue');
-	g3.selectAll("path").attr("d", path)
+	g3.selectAll('path').attr("d", path)
 		.style("fill-opacity", 0.0)
 		.style("stroke", "orange")
 		.style("stroke-opacity", opacity_val)
 		.attr('fill','blue');
-	g4.selectAll("path").attr("d", path)
+	g4.selectAll('path').attr("d", path)
 		.style("fill-opacity", 0.0)
 		.style("stroke", "green")
 		.style("stroke-opacity", opacity_val)
@@ -748,51 +754,51 @@ function update_airlines(mflights){
 		.on("click", function(d){
 			// console.log(d.name)
 			if (selected_ARL.indexOf(d.name)>-1){
-				g.selectAll("path")
+				g.selectAll('path')
 					.filter(function(i){return i.properties.ARL_COD===d.name})
 					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
-				g2.selectAll("path")
+				g2.selectAll('path')
 					.filter(function(i){return i.properties.ARL_COD===d.name})
 					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
-				g3.selectAll("path")
+				g3.selectAll('path')
 					.filter(function(i){return i.properties.ARL_COD===d.name})
 					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
-				g4.selectAll("path")
+				g4.selectAll('path')
 					.filter(function(i){return i.properties.ARL_COD===d.name})
 					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
 				selected_ARL.splice(selected_ARL.indexOf(d.name),1);
 			} else {
-				g.selectAll("path")
+				g.selectAll('path')
 					.filter(function(i){return i.properties.ARL_COD===d.name})
 					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
-				g2.selectAll("path")
+				g2.selectAll('path')
 					.filter(function(i){return i.properties.ARL_COD===d.name})
 					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
-				g3.selectAll("path")
+				g3.selectAll('path')
 					.filter(function(i){return i.properties.ARL_COD===d.name})
 					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
-				g4.selectAll("path")
+				g4.selectAll('path')
 					.filter(function(i){return i.properties.ARL_COD===d.name})
 					.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
 				selected_ARL.push(d.name)
 			}
-			displayed_flights = searched_flights.features//g.selectAll("path")
+			displayed_flights = searched_flights.features//g.selectAll('path')
 				.filter(function(d){return d.displayed=="True"});
 			draw_metrics(displayed_flights);
 			// console.log(displayed_flights.length);
@@ -837,51 +843,51 @@ function update_ori_dest(mflights){
 		.on("click", function(d){
 			// console.log(d.name)
 			if (selected_OD.indexOf(d.name)>-1){
-				g.selectAll("path")
+				g.selectAll('path')
 					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
-				g2.selectAll("path")
+				g2.selectAll('path')
 					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
-				g3.selectAll("path")
+				g3.selectAll('path')
 					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
-				g4.selectAll("path")
+				g4.selectAll('path')
 					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="False"})
 					.style("display", "none");
 				selected_OD.splice(selected_OD.indexOf(d.name),1);
 			} else {
-				g.selectAll("path")
+				g.selectAll('path')
 					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
-				g2.selectAll("path")
+				g2.selectAll('path')
 					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
-				g3.selectAll("path")
+				g3.selectAll('path')
 					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
-				g4.selectAll("path")
+				g4.selectAll('path')
 					.filter(function(i){return (i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)===d.name})
 					.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 					.each(function(d){d.displayed="True"})
 					.style("display", null);
 				selected_OD.push(d.name)
 			}
-			displayed_flights = searched_flights.features//g.selectAll("path")
+			displayed_flights = searched_flights.features//g.selectAll('path')
 				.filter(function(d){return d.displayed=="True"});
 			draw_metrics(displayed_flights);
 			// console.log(displayed_flights.length);
@@ -895,19 +901,19 @@ function update_ori_dest(mflights){
 function checkAll_OD(){
 	selected_OD = [];
     d3.select("#ori-dest-list").selectAll('input').property('checked',true);
-    g.selectAll("path")
+    g.selectAll('path')
     	.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
-	g2.selectAll("path")
+	g2.selectAll('path')
     	.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
-	g3.selectAll("path")
+	g3.selectAll('path')
     	.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
-	g4.selectAll("path")
+	g4.selectAll('path')
     	.filter(function(i){return selected_ARL.indexOf(i.properties.ARL_COD)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
@@ -917,7 +923,7 @@ function checkAll_OD(){
 	    selected_OD.push(key);
 	}	
 
-	displayed_flights = searched_flights.features//g.selectAll("path")
+	displayed_flights = searched_flights.features//g.selectAll('path')
 		.filter(function(d){return d.displayed=="True"});
 	draw_metrics(displayed_flights);
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
@@ -926,23 +932,23 @@ function checkAll_OD(){
 }
 function uncheckAll_OD(){
     d3.select("#ori-dest-list").selectAll('input').property('checked',false);
-    g.selectAll("path")
+    g.selectAll('path')
     	.each(function(d){d.displayed="False"})
 		.style("display", "none");
-	g2.selectAll("path")
+	g2.selectAll('path')
     	.each(function(d){d.displayed="False"})
 		.style("display", "none");
-	g3.selectAll("path")
+	g3.selectAll('path')
     	.each(function(d){d.displayed="False"})
 		.style("display", "none");
-	g4.selectAll("path")
+	g4.selectAll('path')
     	.each(function(d){d.displayed="False"})
 		.style("display", "none");
 	d3.select("#ori-dest-list").selectAll('input')
 		.property('checked',false);
     selected_OD = [];
 
-	displayed_flights = searched_flights.features//g.selectAll("path")
+	displayed_flights = searched_flights.features//g.selectAll('path')
 		.filter(function(d){return d.displayed=="True"});
 	draw_metrics(displayed_flights);
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
@@ -952,19 +958,19 @@ function checkAll_ARL(){
 	selected_ARL = [];
     d3.select("#airlines-list-list").selectAll('label').selectAll('input')
     	.property('checked',true);
-    g.selectAll("path")
+    g.selectAll('path')
     	.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
-	g2.selectAll("path")
+	g2.selectAll('path')
     	.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
-	g3.selectAll("path")
+	g3.selectAll('path')
     	.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
-	g4.selectAll("path")
+	g4.selectAll('path')
     	.filter(function(i){return selected_OD.indexOf(i.properties.DEP_APRT+'-'+i.properties.ARR_APRT)>-1})
 		.each(function(d){d.displayed="True"})
 		.style("display", null);
@@ -974,7 +980,7 @@ function checkAll_ARL(){
 	    selected_ARL.push(key);
 	}
 	
-	displayed_flights = searched_flights.features//g.selectAll("path")
+	displayed_flights = searched_flights.features//g.selectAll('path')
 		.filter(function(d){return d.displayed=="True"});
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
 	d3.select("#info_flights_ARL").text("#Airlines: "+selected_ARL.length);
@@ -984,23 +990,23 @@ function checkAll_ARL(){
 }
 function uncheckAll_ARL(){
     d3.select("#airlines-list").selectAll('label').selectAll('input').property('checked',false);
-    g.selectAll("path")
+    g.selectAll('path')
 	    .each(function(d){d.displayed="False"})
 		.style("display", "none");
-	g2.selectAll("path")
+	g2.selectAll('path')
 	    .each(function(d){d.displayed="False"})
 		.style("display", "none");
-	g3.selectAll("path")
+	g3.selectAll('path')
 	    .each(function(d){d.displayed="False"})
 		.style("display", "none");
-	g4.selectAll("path")
+	g4.selectAll('path')
 	    .each(function(d){d.displayed="False"})
 		.style("display", "none");
 	d3.select("#airlines-list").selectAll('input')
 		.property('checked',false);
     selected_ARL =[];
 	
-	displayed_flights = searched_flights.features//g.selectAll("path")
+	displayed_flights = searched_flights.features//g.selectAll('path')
 		.filter(function(d){return d.displayed=="True"});
 	draw_metrics(displayed_flights);
 	d3.select("#info_flights_num").text("#Flights: "+displayed_flights.length);
