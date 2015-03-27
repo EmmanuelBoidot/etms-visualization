@@ -14,14 +14,7 @@ function generateARL_COD(){
 function generateDEP_ARP(){
 	var temp='';
 	if ($('#DEPT_APRT').val() !==''){
-		temp = '{"term": {"AIR.DEPT_APRT": "' + $('#DEPT_APRT').val() + '"}},';
-	}	
-	return temp;
-}
-function generateDEP_ARP2(){
-	var temp='';
-	if ($('#DEPT_APRT').val() !==''){
-		temp = '{"term": {"AIR.DEP_ARPT": "' + $('#DEPT_APRT').val() + '"}},';
+		temp = '{"term": {"AIR.DEP_APRT": "' + $('#DEPT_APRT').val() + '"}},';
 	}	
 	return temp;
 }
@@ -67,41 +60,6 @@ function generateDepTime(){
 	}
 	return temp;
 }
-//////////////////////// plan part
-function generateArrDate2(){
-	var temp='';
-	if ($('#ArrDate_from').val() !==''){
-		temp = '{"range": {"AIR.ACTUAL_ARR_DATE": {"from":"' + $('#ArrDate_from').val() + '","to":"'+ $('#ArrDate_to').val() +'"}}},';
-	}
-	return temp;
-}
-function generateDepDate2(){
-	var temp='';
-	if ($('#DepDate_from').val() !==''){
-		temp = '{"range": {"AIR.ACTUAL_DEP_TIME": {"from":"' + $('#DepDate_from').val() + '","to":"'+ $('#DepDate_to').val() +'"}}},';
-	}
-	return temp;
-}
-function generateArrTime2(){
-	var temp='';
-	if ($('#ArrTime_from').val() !==''){
-		temp = '{"range": {"AIR.ACTUAL_ARR_TIME": {"from":"' + $('#ArrTime_from').val() + '","to":"'+ $('#ArrTime_to').val() +'"}}},';
-	}
-	return temp;
-}
-function generateDepTime2(){
-	var temp='';
-	if ($('#DepTime_from').val() !==''){
-		temp = '{"range": {"AIR.ACTUAL_DEP_TIME": {"from":"' + $('#DepTime_from').val() + '","to":"'+ $('#DepTime_to').val() +'"}}},';
-	}
-	return temp;
-}
-
-
-
-//////////////////////
-
-
 var from_=0;
 function next(){
 	dispsize_ = $('#num_plot').val();
@@ -185,23 +143,6 @@ function generateQuery(){
 	//$("#query").html(library.json.prettyPrint(JSON.parse(temp)));
 	return temp;
 }
-function generateQuery2(){
-	temp='';
-	if ($('#DEPT_APRT').val()=='' && $('#ARR_APRT').val()==''&& $('#AirlineCode').val()==''&& $('#FLI_NUM').val()==''){
-		alert('Please select at least one category');
-	}
-	
-	else if(($('#DEPT_APRT').val()!== '' || $('#ARR_APRT').val()!==''|| $('#AirlineCode').val()!==''|| $('#FLI_NUM').val()!=='')){
-		//alert('not radius')
-		temp = removeLastComma(generateHeader() + generateARL_COD() + generateDEP_ARP2() + generateARR_APRT() + generateFLI_NUM() + generateArrDate2()+ generateDepDate2() + generateDepTime2()+ generateArrTime2()+']}}}}}}}}');
-	}
-	
-	// document.getElementById("query2").innerHTML=temp;
-	//alert(temp)
-	//$("#query2").html(library.json.prettyPrint(JSON.parse(temp)));
-	
-	return temp;
-}
 function removeLastComma(s) {
    var n = s.lastIndexOf(',');
    s = s.substring(0, n) + '' + s.substring(n + 1);
@@ -270,7 +211,7 @@ var responseText = '';
 
 function search() {
 	var url = "http://localhost:9200/" + 'faa_nextor_flight_traj_plan/_search?' + DispSize();
-	var url2 = "http://localhost:9200/" + 'faa_nextor_flightplan/_search?' + DispSize();
+	//var url2 = "http://localhost:9200/" + 'faa_nextor_flightplan/_search?' + DispSize();
 	$("#demo_adress").html(DispSize());
 	var client = new XMLHttpRequest();
 	client.open("POST", url, false);

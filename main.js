@@ -1,8 +1,8 @@
-var mouseLat = 34.5;
-var mouseLng = -94.8;
+var mouseLat = 33.85;
+var mouseLng = -84.8;
 var datetimeformat = d3.time.format("%Y%m%dT%H:%M:%S");
 var timeformat = d3.time.format("%H:%M");
-var map = L.map('map').setView([34.5, -95],4);
+var map = L.map('map').setView([33.85, -84.8],4);
 var svg = d3.select(map.getPanes().overlayPane).append("svg");
 var g2 = svg.append("g").attr("class", "leaflet-zoom-hide");
 var g3 = svg.append("g").attr("class", "leaflet-zoom-hide");
@@ -488,12 +488,19 @@ function compute_metrics(d){
 		achieved_dist100to100=achieved_dist100to100+getDistanceFromLatLonInNm(depapt_latlon[0],depapt_latlon[1],d.geometry.coordinates[i100dep][0],d.geometry.coordinates[i100dep][1])+getDistanceFromLatLonInNm(arrapt_latlon[0],arrapt_latlon[1],d.geometry.coordinates[i100arr][0],d.geometry.coordinates[i100arr][1])-200;
 
 		// Compute the flight time for each
-		travel_time_40to40=(d.geometry.times[i40arr]-d.geometry.times[i40dep])/60000;// in minutes
-		travel_time_40to100=(d.geometry.times[i100arr]-d.geometry.times[i40dep])/60000;
-		travel_time_100to100=(d.geometry.times[i100arr]-d.geometry.times[i100dep])/60000;
-		if (travel_time_100to100<0){
-			travel_time_100to100=(d.geometry.times[i100arr+1]-d.geometry.times[i100dep-1])/60000; //a few short flights have problems with indexes otherwise
+		if (typeof d.geometry.times ==='undefined'){
+			travel_time_40to40 = 0
+			travel_time_40to100 = 0
+			travel_time_100to100 = 0
 		}
+		else{
+			travel_time_40to40=(d.geometry.times[i40arr]-d.geometry.times[i40dep])/60000;// in minutes
+			travel_time_40to100=(d.geometry.times[i100arr]-d.geometry.times[i40dep])/60000;
+			travel_time_100to100=(d.geometry.times[i100arr]-d.geometry.times[i100dep])/60000;
+			if (travel_time_100to100<0){
+				travel_time_100to100=(d.geometry.times[i100arr+1]-d.geometry.times[i100dep-1])/60000; //a few short flights have problems with indexes otherwise
+			}
+		}		
 		//Compute the total flight distance from 40 to 40 - sum the distance between each consecutive point
 		total_dist40to40=0;
 		total_dist40to100=0;
@@ -1074,6 +1081,9 @@ function uncheckAll_ARL(){
 
 			// metrics
 			searched_flights.features[i].metrics = compute_metrics(searched_flights.features[i])
+			searched_flightplans_LA.features[i].metrics = compute_metrics(searched_flightplans_LA.features[i])
+			//searched_flightplans_LF.features[i].metrics = compute_metrics(searched_flightplans_LF.features[i])
+			//searched_flightplans_PD.features[i].metrics = compute_metrics(searched_flightplans_PD.features[i])
 		}
 
 	console.log("start drawing");

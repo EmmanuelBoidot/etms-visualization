@@ -22,7 +22,7 @@ function doRun(n) {
 
 // List of airports
 function generateAirportLists(){
-	temp = '{"aggs":{"air":{"nested":{"path":"AIR"},"aggs":{"dept_aprt":{"terms":{"field":"AIR.DEPT_APRT","size":10000}},"arr_aprt":{"terms":{"field":"AIR.ARR_APRT","size":10000}},"airlines":{"terms":{"field":"AIR.ARL_COD","size":10000}}}}}}';
+	temp = '{"aggs":{"air":{"nested":{"path":"AIR"},"aggs":{"dept_aprt":{"terms":{"field":"AIR.DEP_APRT","size":10000}},"arr_aprt":{"terms":{"field":"AIR.ARR_APRT","size":10000}},"airlines":{"terms":{"field":"AIR.ARL_COD","size":10000}}}}}}';
 	return temp;
 }
 
